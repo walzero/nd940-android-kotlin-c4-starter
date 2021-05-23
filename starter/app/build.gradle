@@ -9,12 +9,13 @@ plugins {
 
 android {
     compileSdkVersion rootProject.compileSdkVersion
-    buildToolsVersion "29.0.3"
+    buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "com.udacity.project4"
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
+        multiDexEnabled true
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -69,7 +70,6 @@ dependencies {
 
     // Architecture Components
     //Navigation dependencies
-    implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.0-beta02'
     implementation "androidx.lifecycle:lifecycle-common-java8:$archLifecycleVersion"
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
@@ -88,8 +88,8 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
 
     //Koin
-    implementation "org.koin:koin-android:$koinVersion"
-    implementation "org.koin:koin-androidx-viewmodel:$koinVersion"
+    implementation "io.insert-koin:koin-android:$koinVersion"
+    implementation "io.insert-koin:koin-androidx-viewmodel:$koinVersion"
 
 
     // Dependencies for local unit tests
@@ -126,7 +126,7 @@ dependencies {
     implementation "androidx.fragment:fragment-ktx:$fragmentVersion"
     androidTestImplementation "org.mockito:mockito-core:$mockitoVersion"
     androidTestImplementation "com.linkedin.dexmaker:dexmaker-mockito:$dexMakerVersion"
-    androidTestImplementation('org.koin:koin-test:2.0.1') { exclude group: 'org.mockito' }
+    androidTestImplementation('io.insert-koin:koin-test:2.0.1') { exclude group: 'org.mockito' }
 
 
     //Maps & Geofencing
