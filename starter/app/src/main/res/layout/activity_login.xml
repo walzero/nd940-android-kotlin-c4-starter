@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="viewmodel"
+            type="com.udacity.project4.authentication.AuthenticationViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/login_background"
+        tools:context=".locationreminders.RemindersActivity">
+
+        <TextView
+            android:id="@+id/welcomeTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/tape_background"
+            android:fontFamily="@font/yeseva_one"
+            android:gravity="center_horizontal"
+            android:paddingStart="@dimen/padding_large"
+            android:paddingTop="@dimen/padding_normal"
+            android:paddingEnd="@dimen/padding_large"
+            android:paddingBottom="@dimen/padding_normal"
+            android:text="@string/welcome_to_the_location_reminder_app"
+            android:textAlignment="center"
+            android:textColor="@color/colorSecondary"
+            android:textSize="@dimen/text_size_extra_large"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@+id/loginButton"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias=".54"
+            app:layout_constraintWidth_max="@dimen/max_width_large" />
+
+        <Button
+            android:id="@+id/loginButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/margin_large"
+            android:layout_marginEnd="@dimen/margin_large"
+            android:layout_marginBottom="@dimen/margin_large"
+            android:paddingStart="@dimen/padding_large"
+            android:paddingEnd="@dimen/padding_large"
+            android:paddingTop="@dimen/padding_normal"
+            android:paddingBottom="@dimen/padding_normal"
+            android:text="@string/login"
+            android:textColor="@color/black"
+            android:textSize="@dimen/text_size_extra_large"
+            android:theme="@style/AppTheme.Button"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintVertical_bias="0.8"
+            app:layout_constraintWidth_max="@dimen/max_width" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

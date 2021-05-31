@@ -21,6 +21,9 @@
     <string name="current_location_pin">Current Location Pin</string>
     <string name="poi">poi</string>
     <string name="location_required_error">Location services must be enabled to use the app</string>
+    <string name="permission_denied_title">Location permission required</string>
+    <string name="try_again">Try again</string>
+    <string name="go_back">Go Back</string>
     <string name="permission_denied_explanation">You need to grant location permission in order to select the location.</string>
     <string name="settings">Settings</string>
     <string name="select_poi">Please select a point of interest</string>
@@ -30,15 +33,22 @@
     <string name="content_text">Location Reminder</string>
     <string name="select_title">Please select title</string>
     <string name="select_location">Please select location</string>
+    <string name="confirm">Select</string>
     <string name="geofences_not_added">Problem in adding geofences.</string>
     <string name="welcome">Welcome</string>
     <string name="err_enter_title">Please enter title</string>
     <string name="err_select_location">Please select location</string>
+    <string name="user_authenticated">Welcome back</string>
+    <string name="agree">yes</string>
+    <string name="disagree">No</string>
 
     <!-- Error strings -->
+    <string name="style_parsing_failed">Style parsing Failed.</string>
+    <string name="style_not_found">"Could not find style error: %1$s"</string>
     <string name="geofence_unknown_error">Unknown error: the Geofence service is not available now.</string>
     <string name="geofence_not_available">Geofence service is not available now. Go to Settings>Location>Mode and choose High accuracy.</string>
     <string name="geofence_too_many_geofences">Your app has registered too many geofences.</string>
     <string name="geofence_too_many_pending_intents">You have provided too many PendingIntents to the addGeofences() call.</string>
     <string name="error_adding_geofence">Error Happened, Can\'t Add Geofence</string>
+    <string name="login_failed">Sign in unsuccessful, please try again</string>
 </resources>

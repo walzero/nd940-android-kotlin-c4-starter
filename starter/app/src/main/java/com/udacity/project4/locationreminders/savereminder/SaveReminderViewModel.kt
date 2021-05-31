@@ -3,6 +3,7 @@ package com.udacity.project4.locationreminders.savereminder
 import android.app.Application
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.PointOfInterest
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseViewModel
@@ -11,15 +12,16 @@ import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import kotlinx.coroutines.launch
+import java.util.*
 
 class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSource) :
     BaseViewModel(app) {
-    val reminderTitle = MutableLiveData<String>()
-    val reminderDescription = MutableLiveData<String>()
-    val reminderSelectedLocationStr = MutableLiveData<String>()
-    val selectedPOI = MutableLiveData<PointOfInterest>()
-    val latitude = MutableLiveData<Double>()
-    val longitude = MutableLiveData<Double>()
+    val reminderTitle = MutableLiveData<String?>()
+    val reminderDescription = MutableLiveData<String?>()
+    val reminderSelectedLocationStr = MutableLiveData<String?>()
+    val selectedPOI = MutableLiveData<PointOfInterest?>()
+    val latitude = MutableLiveData<Double?>()
+    val longitude = MutableLiveData<Double?>()
 
     /**
      * Clear the live data objects to start fresh next time the view model gets called
@@ -79,4 +81,25 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
         }
         return true
     }
+
+    fun setChosenLocation(latLng: LatLng) {
+        selectedPOI.value = null
+        reminderSelectedLocationStr.value = createSnippet(latLng)
+        latitude.value = latLng.latitude
+        longitude.value = latLng.longitude
+    }
+
+    fun setChosenLocation(poi: PointOfInterest) {
+        selectedPOI.value = poi
+        latitude.value = poi.latLng.latitude
+        longitude.value = poi.latLng.longitude
+        reminderSelectedLocationStr.value = poi.name ?: createSnippet(poi.latLng)
+    }
+
+    fun createSnippet(latLng: LatLng) = String.format(
+        Locale.getDefault(),
+        "Lat: %1$.5f, Long: %2$.5f",
+        latLng.latitude,
+        latLng.longitude
+    )
 }

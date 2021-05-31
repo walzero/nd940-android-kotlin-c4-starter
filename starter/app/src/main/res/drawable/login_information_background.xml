@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:drawable="@color/colorPrimaryDark"
+        android:gravity="fill" />
+
+    <item
+        android:drawable="@drawable/phone_navigation"
+        android:scaleType="fitXY"
+        android:gravity="fill" />
+
+    <item
+        android:drawable="@drawable/gradient_background_mask"
+        android:gravity="fill" />
+
+</layer-list>
