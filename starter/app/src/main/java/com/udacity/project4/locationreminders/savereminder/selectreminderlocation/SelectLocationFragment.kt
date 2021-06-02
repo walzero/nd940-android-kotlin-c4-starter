@@ -1,20 +1,14 @@
 package com.udacity.project4.locationreminders.savereminder.selectreminderlocation
 
 
-import android.Manifest
-import android.content.pm.PackageManager
+import android.annotation.SuppressLint
 import android.content.res.Resources
 import android.location.Location
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Lifecycle
-import com.afollestad.materialdialogs.MaterialDialog
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -23,8 +17,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.material.snackbar.Snackbar
 import com.udacity.project4.R
-import com.udacity.project4.base.BaseFragment
-import com.udacity.project4.base.NavigationCommand
+import com.udacity.project4.base.BaseLocationFragment
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.*
@@ -32,21 +25,12 @@ import org.koin.android.ext.android.inject
 import java.util.*
 
 
-class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
+class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
 
     //Use Koin to get the view model of the SaveReminder
     override val _viewModel: SaveReminderViewModel by inject()
 
     private val TAG = SelectLocationFragment::class.java.simpleName
-
-    private val requiredPermissions = arrayOf(
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_COARSE_LOCATION
-    )
-
-    private val locationServices by lazy {
-        LocationServices.getFusedLocationProviderClient(requireActivity())
-    }
 
     private val mapFragment by lazy {
         childFragmentManager
@@ -56,7 +40,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     private lateinit var map: GoogleMap
     private lateinit var binding: FragmentSelectLocationBinding
     private lateinit var snackbar: Snackbar
-    private lateinit var permissionDialog: MaterialDialog
+
     private var lastKnownLocation: Location? = null
     private var positionMarker: Marker? = null
         set(value) {
@@ -65,25 +49,11 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             field?.position?.showConfirmationSnackbar()
         }
 
-    private var requestPermission =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
-            if (result.all { it.value }) {
-                Log.i("DEBUG", "permissions granted")
-                mapFragment.getMapAsync(this@SelectLocationFragment)
-            } else {
-                Log.i("DEBUG", "permissions denied: ${result.filter { it.value }}")
-                permissionDialog = showPermissionRequiredDialog()
-            }
-        }
+    override fun onLocationPermissionsGranted() {
+        mapFragment.getMapAsync(this@SelectLocationFragment)
+    }
 
-    private fun showPermissionRequiredDialog(): MaterialDialog = requireActivity().showYesNoDialog(
-        title = R.string.permission_denied_title,
-        message = R.string.permission_denied_explanation,
-        positiveText = R.string.try_again,
-        negativeText = R.string.go_back,
-        onNegativeAction = { goBackToLastFragment() },
-        onPositiveAction = { requestPermission.launch(requiredPermissions) }
-    )
+    override fun onLocationPermissionsDenied() {}
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -98,7 +68,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         setDisplayHomeAsUpEnabled(true)
         setTitle(getString(R.string.select_location))
 
-        requestPermission.launch(requiredPermissions)
+        requestLocationPermissions()
 
         return binding.root
     }
@@ -151,9 +121,10 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         map.enableMyLocation()
     }
 
+    @SuppressLint("MissingPermission")
     private fun GoogleMap.initializeCurrentLocation() {
-        if (requiredPermissions.checkIfHasAllPermission()) {
-            val locationTask = locationServices.lastLocation
+        if (hasPermissions()) {
+            val locationTask = _locationServices.lastLocation
 
             locationTask.addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -171,8 +142,9 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         }
     }
 
+    @SuppressLint("MissingPermission")
     private fun GoogleMap.enableMyLocation() {
-        if (requiredPermissions.checkIfHasAllPermission()) {
+        if (hasPermissions()) {
             isMyLocationEnabled = true
         }
     }
@@ -240,18 +212,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         }
     }
 
-    private fun Array<String>.checkIfHasAllPermission(): Boolean {
-        forEach { permission ->
-            if (getPermissionStatus(permission) != PackageManager.PERMISSION_GRANTED)
-                return false
-        }
-
-        return true
-    }
-
-    private fun getPermissionStatus(permission: String) =
-        ActivityCompat.checkSelfPermission(requireContext(), permission)
-
     private fun LatLng.showConfirmationSnackbar() {
         dismissSnackbar()
 
@@ -283,9 +243,5 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         }
 
         return this
-    }
-
-    private fun goBackToLastFragment() {
-        _viewModel.navigationCommand.value = NavigationCommand.Back
     }
 }

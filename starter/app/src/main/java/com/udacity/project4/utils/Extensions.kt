@@ -5,6 +5,8 @@ import android.animation.AnimatorListenerAdapter
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import android.view.View
 import android.widget.Toast
 import androidx.annotation.StringRes
@@ -115,3 +117,9 @@ fun Context.showYesNoDialog(
             onNegativeAction()
         }
     }
+
+fun Context.launchPermissionActivity() {
+    startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+        data = Uri.fromParts("package", packageName, null)
+    })
+}
