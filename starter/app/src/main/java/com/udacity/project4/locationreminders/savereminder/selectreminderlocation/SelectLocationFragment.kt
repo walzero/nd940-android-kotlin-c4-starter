@@ -53,8 +53,6 @@ class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
         mapFragment.getMapAsync(this@SelectLocationFragment)
     }
 
-    override fun onLocationPermissionsDenied() {}
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -68,16 +66,17 @@ class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
         setDisplayHomeAsUpEnabled(true)
         setTitle(getString(R.string.select_location))
 
-        requestLocationPermissions()
-
         return binding.root
+    }
+
+    override fun onStart() {
+        super.onStart()
+        requestLocationPermissions()
     }
 
     private fun LatLng.onLocationSelected() {
         requireContext().applicationContext.showShortToast(_viewModel.createSnippet(this))
-        //        TODO: When the user confirms on the selected location,
-        //         send back the selected location details to the view model
-        //         and navigate back to the previous fragment to save the reminder and add the geofence
+        requireActivity().onBackPressed()
     }
 
 
@@ -213,19 +212,19 @@ class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
     }
 
     private fun LatLng.showConfirmationSnackbar() {
-        dismissSnackbar()
+        if (!lifecycle.currentState.isAtLeast(Lifecycle.State.DESTROYED)) {
+            dismissSnackbar()
 
-        snackbar = binding.root.showConfirmationSnackbar(
-            text = _viewModel.createSnippet(this),
-            actionText = getString(R.string.confirm)
-        ) { sb -> onSelectPOI(sb) }
+            snackbar = binding.root.showConfirmationSnackbar(
+                text = _viewModel.createSnippet(this),
+                actionText = getString(R.string.confirm)
+            ) { sb -> onSelectPOI(sb) }
+        }
     }
 
     private fun LatLng.onSelectPOI(sb: Snackbar) {
-        if (!lifecycle.currentState.isAtLeast(Lifecycle.State.DESTROYED)) {
-            sb.dismiss()
-            onLocationSelected()
-        }
+        sb.dismiss()
+        onLocationSelected()
     }
 
     override fun onDetach() {

@@ -1,8 +1,10 @@
 package com.udacity.project4.locationreminders.savereminder
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.location.Geofence
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.PointOfInterest
 import com.udacity.project4.R
@@ -16,6 +18,9 @@ import java.util.*
 
 class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSource) :
     BaseViewModel(app) {
+
+    private val TAG = SaveReminderViewModel::class.simpleName
+
     val reminderTitle = MutableLiveData<String?>()
     val reminderDescription = MutableLiveData<String?>()
     val reminderSelectedLocationStr = MutableLiveData<String?>()
@@ -102,4 +107,21 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
         latLng.latitude,
         latLng.longitude
     )
+
+    fun createGeofence(reminderDataItem: ReminderDataItem): Geofence? {
+        return try {
+            Geofence.Builder()
+                .setRequestId(reminderDataItem.id)
+                .setCircularRegion(
+                    reminderDataItem.latitude!!,
+                    reminderDataItem.longitude!!,
+                    100f
+                )
+                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+                .build()
+        } catch (e: Exception) {
+            Log.e(TAG, e.toString())
+            null
+        }
+    }
 }

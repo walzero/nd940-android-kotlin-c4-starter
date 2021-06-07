@@ -5,12 +5,15 @@ import android.animation.AnimatorListenerAdapter
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.Settings
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,6 +23,7 @@ import com.afollestad.materialdialogs.callbacks.onCancel
 import com.google.android.material.snackbar.Snackbar
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseRecyclerViewAdapter
+import java.lang.Exception
 
 
 /**
@@ -103,10 +107,13 @@ fun Context.showYesNoDialog(
     @StringRes negativeText: Int = R.string.disagree,
     onNegativeAction: () -> Unit = {},
     onPositiveAction: () -> Unit = {}
-) = MaterialDialog(this)
-    .title(title)
-    .message(message)
-    .show {
+): MaterialDialog {
+    val dialog = MaterialDialog(this).apply {
+        title(title)
+        message(message)
+    }
+
+    dialog.show {
         setOnCancelListener { onNegativeAction() }
         positiveButton(positiveText) { dialog ->
             dialog.dismiss()
@@ -118,8 +125,31 @@ fun Context.showYesNoDialog(
         }
     }
 
-fun Context.launchPermissionActivity() {
+    return dialog
+}
+
+fun Context.launchPermissionSettingsActivity() {
     startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
         data = Uri.fromParts("package", packageName, null)
     })
+}
+
+fun MaterialDialog.tryDimiss() {
+    try {
+        this.dismiss()
+    } catch (e: Exception) {
+        Log.e("DIALOGDISMISS", e.toString())
+    }
+}
+
+fun Context.isAllowed(permission: String): Boolean =
+    ActivityCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+
+fun Context.areAllowed(permissions: Array<String>): Boolean {
+    permissions.forEach { permission ->
+        if (!isAllowed(permission))
+            return false
+    }
+
+    return true
 }
