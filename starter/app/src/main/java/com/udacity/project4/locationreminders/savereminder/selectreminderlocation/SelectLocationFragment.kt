@@ -212,7 +212,7 @@ class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
     }
 
     private fun LatLng.showConfirmationSnackbar() {
-        if (!lifecycle.currentState.isAtLeast(Lifecycle.State.DESTROYED)) {
+        if (lifecycle.currentState.isAtLeast(Lifecycle.State.DESTROYED)) {
             dismissSnackbar()
 
             snackbar = binding.root.showConfirmationSnackbar(
