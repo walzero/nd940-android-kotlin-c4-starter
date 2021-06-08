@@ -101,6 +101,13 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
         reminderSelectedLocationStr.value = poi.name ?: createSnippet(poi.latLng)
     }
 
+    fun clearChosenLocation() {
+        selectedPOI.value = null
+        reminderSelectedLocationStr.value = null
+        latitude.value = null
+        longitude.value = null
+    }
+
     fun createSnippet(latLng: LatLng) = String.format(
         Locale.getDefault(),
         "Lat: %1$.5f, Long: %2$.5f",

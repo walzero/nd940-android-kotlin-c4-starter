@@ -128,7 +128,7 @@ fun Context.showYesNoDialog(
     return dialog
 }
 
-fun Context.launchPermissionSettingsActivity() {
+fun Activity.launchPermissionSettingsActivity() {
     startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
         data = Uri.fromParts("package", packageName, null)
     })

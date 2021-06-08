@@ -3,6 +3,7 @@ package com.udacity.project4.base
 import android.Manifest
 import android.annotation.TargetApi
 import android.os.Build
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import com.afollestad.materialdialogs.MaterialDialog
@@ -38,37 +39,49 @@ abstract class BaseLocationFragment : BaseFragment() {
         }
     }
 
-    @TargetApi(29)
+    @TargetApi(30)
     private fun requestForegroundAndBackgroundLocationPermissions() {
-        if (!requireContext().isAllowed(fineLocationPermission)) {
-            requestLocationPermissions.launch(fineLocationPermission)
+        if (canRequestFineLocationPermission()) {
+            locationPermissionsRequest.launch(fineLocationPermission)
             return
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            when (shouldShowRequestPermissionRationale(backgroundPermission)) {
-                true -> requestLocationPermissions.launch(backgroundPermission)
-                false -> {
-                    permissionDialog = showPermissionsRequiredDialog {
-                        requireContext().launchPermissionSettingsActivity()
-                    }
-                }
-            }
+        if (canRequestBackgroundLocationPermission()) {
+            locationPermissionsRequest.launch(backgroundPermission)
+            return
+        }
+
+        permissionDialog = showPermissionsRequiredDialog {
+            requireActivity().launchPermissionSettingsActivity()
         }
     }
+
+    private fun canRequestBackgroundLocationPermission() =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+                requireContext().isAllowed(fineLocationPermission) &&
+                shouldShowRequestPermissionRationale(backgroundPermission)
+
+    private fun canRequestFineLocationPermission() =
+        !requireContext().isAllowed(fineLocationPermission) &&
+                shouldShowRequestPermissionRationale(fineLocationPermission)
 
     fun hasPermissions(): Boolean {
         var requiredPermissions = arrayOf(fineLocationPermission)
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
             requiredPermissions += backgroundPermission
 
         return requireContext().areAllowed(requiredPermissions)
     }
 
-    private var requestLocationPermissions =
+    private var locationPermissionsRequest =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { result ->
-            requestLocationPermissions()
+            if (!result) {
+                permissionDialog = showPermissionsRequiredDialog { requestLocationPermissions() }
+                return@registerForActivityResult
+            } else {
+                requestLocationPermissions()
+            }
         }
 
     private fun showPermissionsRequiredDialog(
@@ -77,7 +90,7 @@ abstract class BaseLocationFragment : BaseFragment() {
     ): MaterialDialog = requireActivity().showYesNoDialog(
         title = R.string.permission_denied_title,
         message = R.string.permission_denied_explanation,
-        positiveText = R.string.try_again,
+        positiveText = R.string.allow,
         negativeText = R.string.go_back,
         onNegativeAction = onNegativeAction,
         onPositiveAction = onPositiveAction

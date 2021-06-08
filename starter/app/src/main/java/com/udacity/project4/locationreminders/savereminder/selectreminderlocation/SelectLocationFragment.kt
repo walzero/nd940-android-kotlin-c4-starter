@@ -18,6 +18,7 @@ import com.google.android.gms.maps.model.*
 import com.google.android.material.snackbar.Snackbar
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseLocationFragment
+import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.*
@@ -40,6 +41,7 @@ class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
     private lateinit var map: GoogleMap
     private lateinit var binding: FragmentSelectLocationBinding
     private lateinit var snackbar: Snackbar
+    private var selectedLocation: Boolean = false
 
     private var lastKnownLocation: Location? = null
     private var positionMarker: Marker? = null
@@ -50,6 +52,8 @@ class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
         }
 
     override fun onLocationPermissionsGranted() {
+        if(::binding.isInitialized)
+            binding.map.visibility = View.VISIBLE
         mapFragment.getMapAsync(this@SelectLocationFragment)
     }
 
@@ -73,12 +77,6 @@ class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
         super.onStart()
         requestLocationPermissions()
     }
-
-    private fun LatLng.onLocationSelected() {
-        requireContext().applicationContext.showShortToast(_viewModel.createSnippet(this))
-        requireActivity().onBackPressed()
-    }
-
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.map_options, menu)
@@ -218,17 +216,25 @@ class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
             snackbar = binding.root.showConfirmationSnackbar(
                 text = _viewModel.createSnippet(this),
                 actionText = getString(R.string.confirm)
-            ) { sb -> onSelectPOI(sb) }
+            ) { sb ->
+                selectedLocation = true
+                onSelectPOI(sb)
+            }
         }
     }
 
     private fun LatLng.onSelectPOI(sb: Snackbar) {
         sb.dismiss()
-        onLocationSelected()
+        requireContext().applicationContext.showShortToast(_viewModel.createSnippet(this))
+        _viewModel.navigationCommand.postValue(NavigationCommand.Back)
     }
 
     override fun onDetach() {
         super.onDetach()
+
+        if (!selectedLocation)
+            _viewModel.clearChosenLocation()
+
         dismissSnackbar()
     }
 
