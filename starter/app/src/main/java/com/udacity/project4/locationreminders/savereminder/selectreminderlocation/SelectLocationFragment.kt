@@ -83,7 +83,6 @@ class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
-        // TODO: Change the map type based on the user's selection.
         R.id.normal_map -> {
             GoogleMap.MAP_TYPE_NORMAL.changeMapType()
             true
