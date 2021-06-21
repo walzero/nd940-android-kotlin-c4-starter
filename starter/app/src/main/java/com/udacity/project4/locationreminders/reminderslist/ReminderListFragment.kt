@@ -5,16 +5,18 @@ import android.view.*
 import androidx.databinding.DataBindingUtil
 import com.udacity.project4.R
 import com.udacity.project4.authentication.AuthenticationViewModel
-import com.udacity.project4.base.BaseFragment
+import com.udacity.project4.base.BaseLocationFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentRemindersBinding
+import com.udacity.project4.locationreminders.geofence.GeofenceManager
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import com.udacity.project4.utils.setTitle
 import com.udacity.project4.utils.setup
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class ReminderListFragment : BaseFragment() {
+class ReminderListFragment : BaseLocationFragment() {
     //use Koin to retrieve the ViewModel instance
     override val _viewModel: RemindersListViewModel by viewModel()
     private val authViewModel : AuthenticationViewModel by sharedViewModel()

@@ -14,25 +14,38 @@ import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
+import com.udacity.project4.utils.SingleLiveEvent
 import kotlinx.coroutines.launch
 import java.util.*
 
-class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSource) :
-    BaseViewModel(app) {
+class SaveReminderViewModel(
+    val app: Application,
+    val dataSource: ReminderDataSource
+) : BaseViewModel(app) {
 
     private val TAG = SaveReminderViewModel::class.simpleName
 
+    val createGeofence: SingleLiveEvent<ReminderDataItem> = SingleLiveEvent()
+
+    private val selectedPOI = MutableLiveData<PointOfInterest?>()
     val reminderTitle = MutableLiveData<String?>()
     val reminderDescription = MutableLiveData<String?>()
     val reminderSelectedLocationStr = MutableLiveData<String?>()
-    val selectedPOI = MutableLiveData<PointOfInterest?>()
     val latitude = MutableLiveData<Double?>()
     val longitude = MutableLiveData<Double?>()
+
+    fun getCurrentReminderItem() = ReminderDataItem(
+        title = reminderTitle.value,
+        description = reminderDescription.value,
+        location = reminderSelectedLocationStr.value,
+        latitude = latitude.value,
+        longitude = longitude.value
+    )
 
     /**
      * Clear the live data objects to start fresh next time the view model gets called
      */
-    fun onClear() {
+    fun clearData() {
         reminderTitle.value = null
         reminderDescription.value = null
         reminderSelectedLocationStr.value = null
@@ -41,12 +54,19 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
         longitude.value = null
     }
 
+    fun goBack() {
+        navigationCommand.value = NavigationCommand.Back
+    }
+
     /**
      * Validate the entered data then saves the reminder data to the DataSource
      */
-    fun validateAndSaveReminder(reminderData: ReminderDataItem) {
+    fun validateAndSaveReminder(
+        reminderData: ReminderDataItem = getCurrentReminderItem()
+    ) {
         if (validateEnteredData(reminderData)) {
             saveReminder(reminderData)
+            createGeofence.postValue(reminderData)
         }
     }
 
@@ -68,24 +88,31 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
             )
             showLoading.value = false
             showToast.value = app.getString(R.string.reminder_saved)
-            navigationCommand.value = NavigationCommand.Back
         }
     }
 
     /**
      * Validate the entered data and show error to the user if there's any invalid data
      */
-    fun validateEnteredData(reminderData: ReminderDataItem): Boolean {
-        if (reminderData.title.isNullOrEmpty()) {
+    private fun validateEnteredData(
+        reminderData: ReminderDataItem
+    ): Boolean = when {
+        reminderData.title.isNullOrEmpty() -> {
             showSnackBarInt.value = R.string.err_enter_title
-            return false
+            false
         }
 
-        if (reminderData.location.isNullOrEmpty()) {
+        reminderData.location.isNullOrEmpty() -> {
             showSnackBarInt.value = R.string.err_select_location
-            return false
+            false
         }
-        return true
+
+        (reminderData.latitude == null) or (reminderData.longitude == null) -> {
+            showSnackBarInt.value = R.string.geofence_unknown_error
+            false
+        }
+
+        else -> true
     }
 
     fun setChosenLocation(latLng: LatLng) {
@@ -116,21 +143,21 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
         latLng.longitude
     )
 
-    fun createGeofence(reminderDataItem: ReminderDataItem): Geofence? {
-        return try {
-            Geofence.Builder()
-                .setRequestId(reminderDataItem.id)
-                .setCircularRegion(
-                    reminderDataItem.latitude!!,
-                    reminderDataItem.longitude!!,
-                    100f
-                )
-                .setExpirationDuration(NEVER_EXPIRE)
-                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
-                .build()
-        } catch (e: Exception) {
-            Log.e(TAG, e.toString())
-            null
-        }
+    fun setupGeofence(
+        reminderDataItem: ReminderDataItem
+    ): Geofence? = try {
+        Geofence.Builder()
+            .setRequestId(reminderDataItem.id)
+            .setCircularRegion(
+                reminderDataItem.latitude!!,
+                reminderDataItem.longitude!!,
+                100f
+            )
+            .setExpirationDuration(NEVER_EXPIRE)
+            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+            .build()
+    } catch (e: Exception) {
+        Log.e(TAG, e.toString())
+        null
     }
 }

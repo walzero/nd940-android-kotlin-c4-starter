@@ -102,12 +102,14 @@ fun Context.showYesNoDialog(
     @StringRes message: Int,
     @StringRes positiveText: Int = R.string.agree,
     @StringRes negativeText: Int = R.string.disagree,
+    autoDismiss: Boolean = true,
     onNegativeAction: () -> Unit = {},
     onPositiveAction: () -> Unit = {}
 ): MaterialDialog {
     val dialog = MaterialDialog(this).apply {
         title(title)
         message(message)
+        if (!autoDismiss) noAutoDismiss()
     }
 
     dialog.show {

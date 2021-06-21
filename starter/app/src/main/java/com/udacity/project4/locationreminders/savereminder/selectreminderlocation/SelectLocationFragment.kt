@@ -18,7 +18,6 @@ import com.google.android.gms.maps.model.*
 import com.google.android.material.snackbar.Snackbar
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseLocationFragment
-import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.*
@@ -51,7 +50,7 @@ class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
             field?.position?.showConfirmationSnackbar()
         }
 
-    override fun onLocationPermissionsGranted() {
+    private fun onLocationPermissionsGranted() {
         if(::binding.isInitialized)
             binding.map.visibility = View.VISIBLE
         mapFragment.getMapAsync(this@SelectLocationFragment)
@@ -75,7 +74,7 @@ class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
 
     override fun onStart() {
         super.onStart()
-        requestLocationPermissions()
+        runWithPermission(::onLocationPermissionsGranted)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -104,12 +103,8 @@ class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap.apply {
-            val overlaySize = 100f
-            val zoomLevel = 18f
-
             setMapStyle()
             initializeCurrentLocation()
-//            addGroundOverlay(createEmojiOverlay(spLatlng, overlaySize))
             setMapLongClickListener()
             setMapPOIClickListener()
         }
@@ -119,7 +114,7 @@ class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
 
     @SuppressLint("MissingPermission")
     private fun GoogleMap.initializeCurrentLocation() {
-        if (hasPermissions()) {
+        if (hasLocationPermissions()) {
             val locationTask = _locationServices.lastLocation
 
             locationTask.addOnCompleteListener { task ->
@@ -140,7 +135,7 @@ class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
 
     @SuppressLint("MissingPermission")
     private fun GoogleMap.enableMyLocation() {
-        if (hasPermissions()) {
+        if (hasLocationPermissions()) {
             isMyLocationEnabled = true
         }
     }
@@ -225,7 +220,7 @@ class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
     private fun LatLng.onSelectPOI(sb: Snackbar) {
         sb.dismiss()
         requireContext().applicationContext.showShortToast(_viewModel.createSnippet(this))
-        _viewModel.navigationCommand.postValue(NavigationCommand.Back)
+        _viewModel.goBack()
     }
 
     override fun onDetach() {
