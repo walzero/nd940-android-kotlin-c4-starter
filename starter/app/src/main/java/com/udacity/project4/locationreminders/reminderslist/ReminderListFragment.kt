@@ -18,8 +18,10 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class ReminderListFragment : BaseLocationFragment() {
     //use Koin to retrieve the ViewModel instance
-    override val _viewModel: RemindersListViewModel by viewModel()
-    private val authViewModel: AuthenticationViewModel by sharedViewModel()
+    override val _viewModel: RemindersListViewModel by inject()
+    private val authViewModel: AuthenticationViewModel by inject()
+
+    private val geofenceManager: GeofenceManager by inject()
 
     private lateinit var binding: FragmentRemindersBinding
 
@@ -79,6 +81,7 @@ class ReminderListFragment : BaseLocationFragment() {
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.logout -> {
+            geofenceManager.disableAllGeofences()
             _viewModel.deleteAllGeofence()
             authViewModel.logout()
             true

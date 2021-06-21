@@ -6,6 +6,7 @@ import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.local.LocalDB
 import com.udacity.project4.locationreminders.data.local.RemindersLocalRepository
 import com.udacity.project4.locationreminders.geofence.GeofenceManager
+import com.udacity.project4.locationreminders.geofence.GeofenceManagerImpl
 import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import org.koin.android.ext.koin.androidContext
@@ -26,7 +27,7 @@ class MyApp : Application() {
             single { AuthenticationViewModel(get()) }
             single<ReminderDataSource> { RemindersLocalRepository(get()) }
             single { LocalDB.createRemindersDao(this@MyApp) }
-            single { GeofenceManager(get()) }
+            single<GeofenceManager> { GeofenceManagerImpl(get()) }
             single { SaveReminderViewModel(get(), get()) }
             single { RemindersListViewModel(get(), get()) }
         }
