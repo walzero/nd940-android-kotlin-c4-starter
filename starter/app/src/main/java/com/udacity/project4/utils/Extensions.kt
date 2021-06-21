@@ -9,10 +9,14 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.Settings
 import android.util.Log
+import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -86,6 +90,13 @@ fun View.showShortSnackbar(
     text: String,
     length: Int = Snackbar.LENGTH_SHORT
 ): Snackbar = Snackbar.make(this, text, length).also {
+    val params: ViewGroup.LayoutParams = it.view.layoutParams
+    if (params is CoordinatorLayout.LayoutParams) {
+        params.gravity = Gravity.TOP
+    } else {
+        (params as FrameLayout.LayoutParams).gravity = Gravity.TOP
+    }
+    it.view.layoutParams = params
     it.show()
 }
 

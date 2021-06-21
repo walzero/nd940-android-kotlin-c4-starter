@@ -19,7 +19,7 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 class ReminderListFragment : BaseLocationFragment() {
     //use Koin to retrieve the ViewModel instance
     override val _viewModel: RemindersListViewModel by viewModel()
-    private val authViewModel : AuthenticationViewModel by sharedViewModel()
+    private val authViewModel: AuthenticationViewModel by sharedViewModel()
 
     private lateinit var binding: FragmentRemindersBinding
 
@@ -38,8 +38,6 @@ class ReminderListFragment : BaseLocationFragment() {
         setDisplayHomeAsUpEnabled(false)
         setTitle(getString(R.string.app_name))
 
-        binding.refreshLayout.setOnRefreshListener { _viewModel.loadReminders() }
-
         return binding.root
     }
 
@@ -47,6 +45,10 @@ class ReminderListFragment : BaseLocationFragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.lifecycleOwner = this
         setupRecyclerView()
+        binding.refreshLayout.setOnRefreshListener {
+            binding.refreshLayout.isRefreshing = false
+            _viewModel.loadReminders()
+        }
         binding.addReminderFAB.setOnClickListener {
             navigateToAddReminder()
         }
@@ -77,6 +79,7 @@ class ReminderListFragment : BaseLocationFragment() {
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.logout -> {
+            _viewModel.deleteAllGeofence()
             authViewModel.logout()
             true
         }

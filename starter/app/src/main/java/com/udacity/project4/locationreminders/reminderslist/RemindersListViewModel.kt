@@ -67,21 +67,9 @@ class RemindersListViewModel(
         showNoData.value = remindersList.value == null || remindersList.value!!.isEmpty()
     }
 
-    fun setupGeofence(
-        reminderDataItem: ReminderDataItem
-    ): Geofence? = try {
-        Geofence.Builder()
-            .setRequestId(reminderDataItem.id)
-            .setCircularRegion(
-                reminderDataItem.latitude!!,
-                reminderDataItem.longitude!!,
-                100f
-            )
-            .setExpirationDuration(Geofence.NEVER_EXPIRE)
-            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
-            .build()
-    } catch (e: Exception) {
-        Log.e(TAG, e.toString())
-        null
+    fun deleteAllGeofence() {
+        viewModelScope.launch {
+            dataSource.deleteAllReminders()
+        }
     }
 }

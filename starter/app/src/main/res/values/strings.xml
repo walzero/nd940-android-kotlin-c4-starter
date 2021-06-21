@@ -2,7 +2,7 @@
     <string name="app_name">Location Reminders</string>
     <string name="error_happened">Error happened</string>
     <string name="retry">Retry</string>
-    <string name="no_data">No Data</string>
+    <string name="no_data">Empty</string>
     <string name="reminder_title">Reminder Title</string>
     <string name="reminder_desc">Description</string>
     <string name="reminder_location">Reminder Location</string>
@@ -43,6 +43,8 @@
     <string name="user_authenticated">Welcome back</string>
     <string name="agree">yes</string>
     <string name="disagree">No</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="triggered_reminder">Triggered Reminder</string>
 
     <!-- Error strings -->
     <string name="style_parsing_failed">Style parsing Failed.</string>
@@ -53,4 +55,5 @@
     <string name="geofence_too_many_pending_intents">You have provided too many PendingIntents to the addGeofences() call.</string>
     <string name="error_adding_geofence">Error Happened, Can\'t Add Geofence</string>
     <string name="login_failed">Sign in unsuccessful, please try again</string>
+    <string name="go_to_add_reminder">Go To Add Reminder</string>
 </resources>

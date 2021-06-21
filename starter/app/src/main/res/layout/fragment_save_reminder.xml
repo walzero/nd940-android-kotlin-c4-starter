@@ -45,10 +45,11 @@
             android:clickable="true"
             android:drawableStart="@drawable/ic_location"
             android:drawableLeft="@drawable/ic_location"
+            app:drawableTint="@color/darkGray"
             android:focusable="true"
             android:gravity="center_vertical"
             android:text="@string/reminder_location"
-            android:textColor="@color/black"
+            android:textColor="@color/darkGray"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/reminderDescription" />
 
