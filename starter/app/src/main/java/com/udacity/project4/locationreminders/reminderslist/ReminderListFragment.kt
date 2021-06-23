@@ -13,8 +13,6 @@ import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import com.udacity.project4.utils.setTitle
 import com.udacity.project4.utils.setup
 import org.koin.android.ext.android.inject
-import org.koin.androidx.viewmodel.ext.android.sharedViewModel
-import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class ReminderListFragment : BaseLocationFragment() {
     //use Koin to retrieve the ViewModel instance
@@ -82,7 +80,7 @@ class ReminderListFragment : BaseLocationFragment() {
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.logout -> {
             geofenceManager.disableAllGeofences()
-            _viewModel.deleteAllGeofence()
+            _viewModel.clearReminders()
             authViewModel.logout()
             true
         }
