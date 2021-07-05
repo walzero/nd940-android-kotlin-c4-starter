@@ -2,6 +2,9 @@ package com.udacity.project4.locationreminders.savereminder
 
 import android.app.Application
 import android.util.Log
+import androidx.annotation.VisibleForTesting
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.Geofence
@@ -15,43 +18,52 @@ import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.utils.SingleLiveEvent
+import com.udacity.project4.utils.addSourceThenPost
 import kotlinx.coroutines.launch
 import java.util.*
 
 class SaveReminderViewModel(
-    val app: Application,
-    val dataSource: ReminderDataSource
+    app: Application,
+    private val dataSource: ReminderDataSource
 ) : BaseViewModel(app) {
 
     private val TAG = SaveReminderViewModel::class.simpleName
 
     val createGeofence: SingleLiveEvent<ReminderDataItem> = SingleLiveEvent()
 
-    private val selectedPOI = MutableLiveData<PointOfInterest?>()
+    val selectedPOI = MutableLiveData<PointOfInterest?>()
     val reminderTitle = MutableLiveData<String?>()
     val reminderDescription = MutableLiveData<String?>()
     val reminderSelectedLocationStr = MutableLiveData<String?>()
     val latitude = MutableLiveData<Double?>()
     val longitude = MutableLiveData<Double?>()
 
-    fun getCurrentReminderItem() = ReminderDataItem(
-        title = reminderTitle.value,
-        description = reminderDescription.value,
-        location = reminderSelectedLocationStr.value,
-        latitude = latitude.value,
-        longitude = longitude.value
-    )
+    private val _currentReminderItem = MediatorLiveData<ReminderDataItem>().apply {
+        value = ReminderDataItem()
+    }
+
+    val currentReminderItem: LiveData<ReminderDataItem> = _currentReminderItem
+
+    init {
+        addMediatorSources()
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    fun getCurrentReminderItem(): ReminderDataItem? = _currentReminderItem.value
 
     /**
      * Clear the live data objects to start fresh next time the view model gets called
      */
     fun clearData() {
+        removeMediatorSources()
         reminderTitle.value = null
         reminderDescription.value = null
         reminderSelectedLocationStr.value = null
         selectedPOI.value = null
         latitude.value = null
         longitude.value = null
+        addMediatorSources()
+        _currentReminderItem.value = ReminderDataItem()
     }
 
     fun goBack() {
@@ -62,33 +74,31 @@ class SaveReminderViewModel(
      * Validate the entered data then saves the reminder data to the DataSource
      */
     fun validateAndSaveReminder(
-        reminderData: ReminderDataItem = getCurrentReminderItem()
-    ) {
+        reminderData: ReminderDataItem = getCurrentReminderItem() ?: ReminderDataItem()
+    ) = viewModelScope.launch {
         if (validateEnteredData(reminderData)) {
-            saveReminder(reminderData)
-            createGeofence.postValue(reminderData)
+            saveReminder(reminderData).also { createGeofence.postValue(reminderData) }
         }
     }
 
     /**
      * Save the reminder to the data source
      */
-    fun saveReminder(reminderData: ReminderDataItem) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    suspend fun saveReminder(reminderData: ReminderDataItem) {
         showLoading.value = true
-        viewModelScope.launch {
-            dataSource.saveReminder(
-                ReminderDTO(
-                    reminderData.title,
-                    reminderData.description,
-                    reminderData.location,
-                    reminderData.latitude,
-                    reminderData.longitude,
-                    reminderData.id
-                )
+        dataSource.saveReminder(
+            ReminderDTO(
+                title = reminderData.title,
+                description = reminderData.description,
+                location = reminderData.location,
+                latitude = reminderData.latitude,
+                longitude = reminderData.longitude,
+                id = reminderData.id
             )
-            showLoading.value = false
-            showToast.value = app.getString(R.string.reminder_saved)
-        }
+        )
+        showLoading.value = false
+        showToastInt.value = R.string.reminder_saved
     }
 
     /**
@@ -97,12 +107,12 @@ class SaveReminderViewModel(
     private fun validateEnteredData(
         reminderData: ReminderDataItem
     ): Boolean = when {
-        reminderData.title.isNullOrEmpty() -> {
+        reminderData.title.isNullOrBlank() -> {
             showSnackBarInt.value = R.string.err_enter_title
             false
         }
 
-        reminderData.location.isNullOrEmpty() -> {
+        reminderData.location.isNullOrBlank() -> {
             showSnackBarInt.value = R.string.err_select_location
             false
         }
@@ -159,5 +169,25 @@ class SaveReminderViewModel(
     } catch (e: Exception) {
         Log.e(TAG, e.toString())
         null
+    }
+
+    private fun addMediatorSources() {
+        _currentReminderItem.run {
+            addSourceThenPost(reminderTitle) { _currentReminderItem.value?.title = it }
+            addSourceThenPost(reminderDescription) { _currentReminderItem.value?.description = it }
+            addSourceThenPost(reminderSelectedLocationStr) { _currentReminderItem.value?.location = it }
+            addSourceThenPost(latitude) { _currentReminderItem.value?.latitude = it }
+            addSourceThenPost(longitude) { _currentReminderItem.value?.longitude = it }
+        }
+    }
+
+    private fun removeMediatorSources() {
+        _currentReminderItem.run {
+            removeSource(reminderTitle)
+            removeSource(reminderDescription)
+            removeSource(reminderSelectedLocationStr)
+            removeSource(latitude)
+            removeSource(longitude)
+        }
     }
 }

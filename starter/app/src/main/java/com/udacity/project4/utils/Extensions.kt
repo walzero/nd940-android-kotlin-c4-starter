@@ -14,11 +14,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.annotation.NonNull
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
@@ -162,4 +166,16 @@ fun Context.areAllowed(permissions: Array<String>): Boolean {
     }
 
     return true
+}
+
+fun <T : Any> MutableLiveData<T>.postSelf() {
+    postValue(value)
+}
+
+fun <L : Any?> MediatorLiveData<*>.addSourceThenPost(source: LiveData<L>, addDataSource: (L?) -> Unit) {
+    addSource(source) {
+        addDataSource(it)
+        if (hasActiveObservers()) postSelf()
+        Log.e("TESTING", it?.toString() ?: "")
+    }
 }

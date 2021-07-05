@@ -7,7 +7,7 @@ import com.udacity.project4.locationreminders.data.source.FakeDataSource.Compani
 import java.util.*
 import kotlin.random.Random.Default.nextDouble
 
-class FakeTestRepository : ReminderDataSource {
+open class FakeTestRepository : ReminderDataSource {
 
     var remindersServiceData: LinkedHashMap<String, ReminderDTO> = LinkedHashMap()
     private var shouldReturnError = false
