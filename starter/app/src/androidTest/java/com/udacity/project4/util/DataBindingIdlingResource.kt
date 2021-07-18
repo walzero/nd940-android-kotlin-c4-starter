@@ -15,23 +15,21 @@
  */
 package com.udacity.project4.util
 
+import android.content.Context
 import android.view.View
+import androidx.annotation.NavigationRes
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.testing.FragmentScenario
+import androidx.fragment.app.testing.withFragment
+import androidx.navigation.testing.TestNavHostController
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.IdlingResource
+import com.udacity.project4.R
 import java.util.UUID
 
-/**
- * An espresso idling resource implementation that reports idle status for all data binding
- * layouts. Data Binding uses a mechanism to post messages which Espresso doesn't track yet.
- *
- * Since this application only uses fragments, the resource only checks the fragments and their
- * children instead of the whole view tree.
- */
 class DataBindingIdlingResource : IdlingResource {
     // list of registered callbacks
     private val idlingCallbacks = mutableListOf<IdlingResource.ResourceCallback>()
@@ -42,7 +40,9 @@ class DataBindingIdlingResource : IdlingResource {
     // onTransitionToIdle callbacks if Espresso never thought we were idle in the first place.
     private var wasNotIdle = false
 
+    lateinit var activityScenario: ActivityScenario<*>
     lateinit var activity: FragmentActivity
+    lateinit var fragment: Fragment
 
     override fun getName() = "DataBinding $id"
 
@@ -94,18 +94,24 @@ private fun View.getBinding(): ViewDataBinding? = DataBindingUtil.getBinding(thi
  * Sets the activity from an [ActivityScenario] to be used from [DataBindingIdlingResource].
  */
 fun DataBindingIdlingResource.monitorActivity(
-    activityScenario: ActivityScenario<out FragmentActivity>
+    activityScenario: ActivityScenario<out FragmentActivity>,
+    onActivity: (FragmentActivity) -> Unit = {}
 ) {
+    this.activityScenario = activityScenario
     activityScenario.onActivity {
         this.activity = it
+        onActivity(it)
     }
 }
 
 /**
  * Sets the fragment from a [FragmentScenario] to be used from [DataBindingIdlingResource].
  */
-fun DataBindingIdlingResource.monitorFragment(fragmentScenario: FragmentScenario<out Fragment>) {
-    fragmentScenario.onFragment {
-        this.activity = it.requireActivity()
+inline fun <reified F: Fragment> DataBindingIdlingResource.monitorFragment(
+    fragmentScenario: FragmentScenario<F>
+) {
+    fragmentScenario.withFragment {
+        this@monitorFragment.activity = this@withFragment.requireActivity()
+        this@monitorFragment.fragment = this
     }
 }

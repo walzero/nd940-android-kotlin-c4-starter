@@ -35,15 +35,14 @@ class SaveReminderFragment : BaseLocationFragment() {
         setDisplayHomeAsUpEnabled(true)
         setTitle(getString(R.string.content_text))
 
+        binding.lifecycleOwner = this
         binding.viewModel = _viewModel
 
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
         super.onViewCreated(view, savedInstanceState)
-        binding.lifecycleOwner = this
         binding.selectLocation.setOnClickListener {
             _viewModel.navigationCommand.value =
                 NavigationCommand.To(SaveReminderFragmentDirections.actionSaveReminderFragmentToSelectLocationFragment())

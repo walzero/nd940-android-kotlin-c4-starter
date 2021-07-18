@@ -41,6 +41,8 @@
             android:resource="@array/preloaded_fonts" />
 
         <activity android:name=".authentication.LoginActivity" />
+        <activity android:name=".locationreminders.data.dummy.DummyAuthenticationActivity" />
+        <activity android:name=".locationreminders.data.dummy.DummyAuthenticatedActivity" />
 
         <activity android:name=".locationreminders.RemindersActivity">
             <intent-filter>

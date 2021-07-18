@@ -14,7 +14,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.Toast
-import androidx.annotation.NonNull
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -172,10 +171,9 @@ fun <T : Any> MutableLiveData<T>.postSelf() {
     postValue(value)
 }
 
-fun <L : Any?> MediatorLiveData<*>.addSourceThenPost(source: LiveData<L>, addDataSource: (L?) -> Unit) {
+fun <L : Any?> MediatorLiveData<*>.addSourceThenPost(source: LiveData<L>, onSourceValueChanged: (L?) -> Unit) {
     addSource(source) {
-        addDataSource(it)
-        if (hasActiveObservers()) postSelf()
-        Log.e("TESTING", it?.toString() ?: "")
+        onSourceValueChanged(it)
+        postSelf()
     }
 }

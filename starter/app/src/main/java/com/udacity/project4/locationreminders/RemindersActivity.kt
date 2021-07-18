@@ -5,14 +5,14 @@ import android.view.MenuItem
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.findNavController
 import com.udacity.project4.R
-import com.udacity.project4.authentication.AuthenticationActivity
+import com.udacity.project4.authentication.AuthenticatedActivity
 import com.udacity.project4.databinding.ActivityRemindersBinding
 import com.udacity.project4.utils.showShortSnackbar
 
 /**
  * The RemindersActivity that holds the reminders fragments
  */
-class RemindersActivity : AuthenticationActivity() {
+class RemindersActivity : AuthenticatedActivity() {
 
     private lateinit var binding: ActivityRemindersBinding
 

@@ -3,37 +3,15 @@ package com.udacity.project4.authentication
 import android.app.Application
 import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.map
-import com.firebase.ui.auth.AuthUI
-import com.udacity.project4.R
+import androidx.lifecycle.LiveData
 
-class AuthenticationViewModel(
-    private val app: Application
-): AndroidViewModel(app) {
-    val authenticationState = FirebaseUserLiveData().map { user ->
-        if (user != null) {
-            AuthenticationState.AUTHENTICATED
-        } else {
-            AuthenticationState.UNAUTHENTICATED
-        }
-    }
+abstract class AuthenticationViewModel(app: Application) : AndroidViewModel(app) {
 
-    fun logout() {
-        AuthUI.getInstance().signOut(app)
-    }
+    abstract val authenticationState: LiveData<AuthenticationState>
 
-    fun createFirebaseAuthIntent(): Intent {
-        val providers = arrayListOf(
-            AuthUI.IdpConfig.EmailBuilder().build(),
-            AuthUI.IdpConfig.GoogleBuilder().build()
-        )
+    abstract fun logout()
 
-        return AuthUI.getInstance()
-            .createSignInIntentBuilder()
-            .setAvailableProviders(providers)
-            .setTheme(R.style.FirebaseAuthTheme)
-            .build()
-    }
+    abstract fun createFirebaseAuthIntent(): Intent
 
     enum class AuthenticationState {
         AUTHENTICATED, UNAUTHENTICATED, INVALID_AUTHENTICATION

@@ -1,13 +1,13 @@
 package com.udacity.project4.locationreminders.data.source
 
-import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.data.dto.Result
+import com.udacity.project4.locationreminders.data.local.ReminderRepository
 import com.udacity.project4.locationreminders.data.source.FakeDataSource.Companion.SINGLE_REMINDER_GET_ERROR
 import java.util.*
 import kotlin.random.Random.Default.nextDouble
 
-open class FakeTestRepository : ReminderDataSource {
+open class FakeTestRepository : ReminderRepository {
 
     var remindersServiceData: LinkedHashMap<String, ReminderDTO> = LinkedHashMap()
     private var shouldReturnError = false
@@ -23,8 +23,8 @@ open class FakeTestRepository : ReminderDataSource {
         return Result.Success(remindersServiceData.values.toList())
     }
 
-    override suspend fun saveReminder(reminder: ReminderDTO) {
-        remindersServiceData[reminder.id] = reminder
+    override suspend fun saveReminder(vararg reminder: ReminderDTO) {
+        reminder.forEach { remindersServiceData[it.id] = it }
     }
 
     override suspend fun getReminder(id: String): Result<ReminderDTO> {

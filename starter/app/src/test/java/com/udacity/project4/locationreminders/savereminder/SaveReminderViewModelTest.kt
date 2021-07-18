@@ -13,7 +13,7 @@ import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.locationreminders.data.source.FakeTestRepository
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runBlockingTest
 import org.junit.*
 import org.junit.Assert.*
 import org.junit.runner.RunWith
@@ -30,7 +30,7 @@ import kotlin.random.Random.Default.nextDouble
 
 
 @RunWith(AndroidJUnit4::class)
-@Config(sdk = [Build.VERSION_CODES.P])
+@Config(sdk = [Build.VERSION_CODES.Q])
 @ExperimentalCoroutinesApi
 @MediumTest
 class SaveReminderViewModelTest {
@@ -50,9 +50,6 @@ class SaveReminderViewModelTest {
 
     @Mock
     private lateinit var navigationCommandObserver: Observer<NavigationCommand>
-
-    @Mock
-    private lateinit var currentReminderItemObserver: Observer<ReminderDataItem>
 
     @Mock
     private lateinit var showLoadingObserver: Observer<Boolean>
@@ -88,7 +85,6 @@ class SaveReminderViewModelTest {
     private fun addObservers() = with(saveReminderViewModel) {
         createGeofence.observeForever(createGeofenceObserver)
         navigationCommand.observeForever(navigationCommandObserver)
-        currentReminderItem.observeForever(currentReminderItemObserver)
         showSnackBarInt.observeForever(snackBarIntObserver)
         showLoading.observeForever(showLoadingObserver)
     }
@@ -100,8 +96,8 @@ class SaveReminderViewModelTest {
     }
 
     @Test
-    fun validateAndSaveReminder_WithValidObjectCallsLoading() = runBlocking {
-        setRandomValuesForReminder()
+    fun validateAndSaveReminder_WithValidObjectCallsLoading() = runBlockingTest {
+        setValuesForReminder()
         saveReminderViewModel.validateAndSaveReminder()
         verify(showLoadingObserver, times(2)).onChanged(showLoadingCaptor.capture())
 
@@ -111,16 +107,16 @@ class SaveReminderViewModelTest {
     }
 
     @Test
-    fun validateAndSaveReminder_WithValidObjectSavesReminder() = runBlocking {
-        setRandomValuesForReminder()
+    fun validateAndSaveReminder_WithValidObjectSavesReminder() = runBlockingTest {
+        setValuesForReminder()
         saveReminderViewModel.validateAndSaveReminder()
         verify(createGeofenceObserver).onChanged(createGeofenceCaptor.capture())
         assertEquals(saveReminderViewModel.getCurrentReminderItem(), createGeofenceCaptor.value)
     }
 
     @Test
-    fun validateAndSaveReminder_WithInvalidObjectDoesntCallSaveReminder() = runBlocking {
-        setRandomValuesForReminder(title = null, description = "")
+    fun validateAndSaveReminder_WithInvalidObjectDoesntCallSaveReminder() = runBlockingTest {
+        setValuesForReminder(title = null, description = "")
         assert(saveReminderViewModel.getCurrentReminderItem()?.title.isNullOrBlank())
         saveReminderViewModel.validateAndSaveReminder()
         verify(snackBarIntObserver).onChanged(any())
@@ -128,47 +124,47 @@ class SaveReminderViewModelTest {
     }
 
     @Test
-    fun validateAndSaveReminder_WithInvalidTitleCallsShowSnackBarInt() = runBlocking {
-        setRandomValuesForReminder(title = null)
+    fun validateAndSaveReminder_WithInvalidTitleCallsShowSnackBarInt() = runBlockingTest {
+        setValuesForReminder(title = null)
         assert(saveReminderViewModel.getCurrentReminderItem()?.title.isNullOrBlank())
         saveReminderViewModel.validateAndSaveReminder()
         verify(snackBarIntObserver).onChanged(any())
     }
 
     @Test
-    fun validateAndSaveReminder_WithInvalidLocationCallsShowSnackBarInt() = runBlocking {
-        setRandomValuesForReminder(location = null)
+    fun validateAndSaveReminder_WithInvalidLocationCallsShowSnackBarInt() = runBlockingTest {
+        setValuesForReminder(location = null)
         assert(saveReminderViewModel.getCurrentReminderItem()?.location.isNullOrBlank())
         saveReminderViewModel.validateAndSaveReminder()
         verify(snackBarIntObserver).onChanged(any())
     }
 
     @Test
-    fun validateAndSaveReminder_WithInvalidLatitudeCallsShowSnackBarInt() = runBlocking {
-        setRandomValuesForReminder(latitude = null)
+    fun validateAndSaveReminder_WithInvalidLatitudeCallsShowSnackBarInt() = runBlockingTest {
+        setValuesForReminder(latitude = null)
         assert(saveReminderViewModel.getCurrentReminderItem()?.latitude == null)
         saveReminderViewModel.validateAndSaveReminder()
         verify(snackBarIntObserver).onChanged(any())
     }
 
     @Test
-    fun validateAndSaveReminder_WithInvalidLongitudeCallsShowSnackBarInt() = runBlocking {
-        setRandomValuesForReminder(longitude = null)
+    fun validateAndSaveReminder_WithInvalidLongitudeCallsShowSnackBarInt() = runBlockingTest {
+        setValuesForReminder(longitude = null)
         assert(saveReminderViewModel.getCurrentReminderItem()?.longitude == null)
         saveReminderViewModel.validateAndSaveReminder()
         verify(snackBarIntObserver).onChanged(any())
     }
 
     @Test
-    fun setChosenLocation_clearsSelectedPOI() {
-        setRandomValuesForReminder()
+    fun setChosenLocationLatLng_clearsSelectedPOI() {
+        setValuesForReminder()
         assertNotNull(saveReminderViewModel.selectedPOI.value)
         saveReminderViewModel.setChosenLocation(LatLng(nextDouble(), nextDouble()))
         assertNull(saveReminderViewModel.selectedPOI.value)
     }
 
     @Test
-    fun setChosenLocation_setsLocationAndLatitudeLongitude() {
+    fun setChosenLocationLatLng_setsLocationAndLatitudeLongitude() {
         assertNull(saveReminderViewModel.reminderSelectedLocationStr.value)
         assertNull(saveReminderViewModel.latitude.value)
         assertNull(saveReminderViewModel.longitude.value)
@@ -179,41 +175,94 @@ class SaveReminderViewModelTest {
     }
 
     @Test
-    fun clearData_ClearsAllData() {
-        setRandomValuesForReminder()
-        verify(currentReminderItemObserver, times(6)).onChanged(any())
-        clearInvocations(currentReminderItemObserver)
+    fun setChosenLocationPOI_setsPOIValues() {
+        assertNull(saveReminderViewModel.selectedPOI.value)
+        assertNull(saveReminderViewModel.latitude.value)
+        assertNull(saveReminderViewModel.longitude.value)
+        assertNull(saveReminderViewModel.reminderSelectedLocationStr.value)
+        val idTest = UUID.randomUUID().toString()
+        val nameTest = UUID.randomUUID().toString()
+        saveReminderViewModel.setChosenLocation(PointOfInterest(LatLng(nextDouble(), nextDouble()), idTest, nameTest))
+        assertNotNull(saveReminderViewModel.reminderSelectedLocationStr.value)
+        assertNotNull(saveReminderViewModel.latitude.value)
+        assertNotNull(saveReminderViewModel.longitude.value)
+        assertNotNull(saveReminderViewModel.selectedPOI.value)
+    }
 
+    @Test
+    fun clearChosenLocation_clearsLocationValues() {
+        val idTest = UUID.randomUUID().toString()
+        val nameTest = UUID.randomUUID().toString()
+        saveReminderViewModel.setChosenLocation(PointOfInterest(LatLng(nextDouble(), nextDouble()), idTest, nameTest))
+        assertNotNull(saveReminderViewModel.reminderSelectedLocationStr.value)
+        assertNotNull(saveReminderViewModel.latitude.value)
+        assertNotNull(saveReminderViewModel.longitude.value)
+        assertNotNull(saveReminderViewModel.selectedPOI.value)
+
+        saveReminderViewModel.clearChosenLocation()
+        assertNull(saveReminderViewModel.selectedPOI.value)
+        assertNull(saveReminderViewModel.latitude.value)
+        assertNull(saveReminderViewModel.longitude.value)
+        assertNull(saveReminderViewModel.reminderSelectedLocationStr.value)
+    }
+
+    @Test
+    fun setupGeofence_withValidObjectReturnsGeofenceBuilderInstance() {
+        setValuesForReminder()
         with(saveReminderViewModel) {
-            Assert.assertNotNull(reminderTitle.value)
-            Assert.assertNotNull(reminderDescription.value)
-            Assert.assertNotNull(reminderSelectedLocationStr.value)
-            Assert.assertNotNull(selectedPOI.value)
-            Assert.assertNotNull(latitude.value)
-            Assert.assertNotNull(longitude.value)
-
-            clearData()
-
-            verify(currentReminderItemObserver, times(6)).onChanged(any())
-            Assert.assertNull(reminderTitle.value)
-            Assert.assertNull(reminderDescription.value)
-            Assert.assertNull(reminderSelectedLocationStr.value)
-            Assert.assertNull(selectedPOI.value)
-            Assert.assertNull(latitude.value)
-            Assert.assertNull(longitude.value)
+            getCurrentReminderItem()?.let { reminder ->
+                val geofenceBuilder = setupGeofence(reminder)
+                assertNotNull(geofenceBuilder)
+            } ?: fail()
         }
     }
 
-    private fun setRandomValuesForReminder(
-        title: String? = UUID.randomUUID().toString(),
-        description: String? = UUID.randomUUID().toString(),
+    @Test
+    fun setupGeofence_withInvalidObjectReturnsNull() {
+        val invalidReminderDataItem = ReminderDataItem(
+            title = null,
+            description = null,
+            location = null,
+            latitude = null,
+            longitude = null
+        )
+        val geofenceBuilder = saveReminderViewModel.setupGeofence(invalidReminderDataItem)
+        assertNull(geofenceBuilder)
+    }
+
+    @Test
+    fun clearData_ClearsAllData() {
+        setValuesForReminder()
+
+        with(saveReminderViewModel) {
+            assertNotNull(reminderTitle.value)
+            assertNotNull(reminderDescription.value)
+            assertNotNull(reminderSelectedLocationStr.value)
+            assertNotNull(selectedPOI.value)
+            assertNotNull(latitude.value)
+            assertNotNull(longitude.value)
+
+            clearData()
+
+            assertNull(reminderTitle.value)
+            assertNull(reminderDescription.value)
+            assertNull(reminderSelectedLocationStr.value)
+            assertNull(selectedPOI.value)
+            assertNull(latitude.value)
+            assertNull(longitude.value)
+        }
+    }
+
+    private fun setValuesForReminder(
+        title: String? = "Google",
+        description: String? = "Google HQ Location",
         location: String? = UUID.randomUUID().toString(),
-        latitude: Double? = nextDouble(),
-        longitude: Double? = nextDouble(),
+        latitude: Double? = 37.4220,
+        longitude: Double? = -122.0840,
         poi: PointOfInterest? = PointOfInterest(
-            LatLng(0.0, 0.0),
-            UUID.randomUUID().toString(),
-            UUID.randomUUID().toString()
+            LatLng(37.4220, -122.0840),
+            "Google",
+            "Google HQ Location"
         )
     ) {
         saveReminderViewModel.let { vm ->

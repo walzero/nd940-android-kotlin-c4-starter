@@ -8,12 +8,13 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
 import com.udacity.project4.MainCoroutineRule
 import com.udacity.project4.locationreminders.data.dto.Result
+import com.udacity.project4.locationreminders.data.source.FakeDataSource.Companion.SINGLE_REMINDER_GET_ERROR
 import com.udacity.project4.locationreminders.data.source.FakeTestRepository
 import com.udacity.project4.locationreminders.data.source.FakeTestRepository.Companion.TEST_EXCEPTION
 import com.udacity.project4.locationreminders.data.source.FakeTestRepository.Companion.generateRandomReminders
 import junit.framework.Assert.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runBlockingTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -28,7 +29,7 @@ import org.mockito.MockitoAnnotations
 import org.robolectric.annotation.Config
 
 @RunWith(AndroidJUnit4::class)
-@Config(sdk = [Build.VERSION_CODES.P])
+@Config(sdk = [Build.VERSION_CODES.Q])
 @ExperimentalCoroutinesApi
 @MediumTest
 class RemindersListViewModelTest {
@@ -98,7 +99,7 @@ class RemindersListViewModelTest {
     }
 
     @Test
-    fun loadRemninders_onSuccessPostsValue() = runBlocking {
+    fun loadReminders_onSuccessPostsValue() = runBlockingTest {
         val randomReminders = generateRandomReminders(3)
         remindersRepository.addReminders(*randomReminders.toTypedArray())
 
@@ -120,7 +121,7 @@ class RemindersListViewModelTest {
     }
 
     @Test
-    fun loadRemninders_onFailurePostsError() {
+    fun loadReminder_onErrorCallsFailureWithError() {
         remindersRepository.setReturnError(true)
         remindersListViewModel.loadReminders()
         verifyNoMoreInteractions(remindersListObserver)
@@ -131,22 +132,48 @@ class RemindersListViewModelTest {
     }
 
     @Test
-    fun deleteAllGeofence_DeletesAllGeofences() {
+    fun loadReminder_withValidIdCallsSuccessWithItem() = runBlockingTest {
+        val reminders = generateRandomReminders(4)
+        remindersRepository.addReminders(*reminders.toTypedArray())
+        val result = remindersRepository.getReminder(reminders[0].id)
+        assert(result is Result.Success)
+        assertEquals(reminders[0], (result as Result.Success).data)
+    }
+
+    @Test
+    fun loadReminder_withInvalidIdCallsErrorWithException() = runBlockingTest {
+        val reminders = generateRandomReminders(4)
+        remindersRepository.addReminders(*reminders.toTypedArray())
+        val result = remindersRepository.getReminder("")
+        assert(result is Result.Error)
+        assertEquals(SINGLE_REMINDER_GET_ERROR, (result as Result.Error).message)
+    }
+
+    @Test
+    fun loadReminder_onFailureCallsErrorWithItem() = runBlockingTest {
+        val reminders = generateRandomReminders(4)
+        remindersRepository.addReminders(*reminders.toTypedArray())
+        remindersRepository.setReturnError(true)
+        val result = remindersRepository.getReminder(reminders[0].id)
+        assert(result is Result.Error)
+        assertEquals(TEST_EXCEPTION, (result as Result.Error).message)
+    }
+
+    @Test
+    fun deleteAllGeofence_DeletesAllGeofences() = runBlockingTest {
         remindersRepository.addReminders(*generateRandomReminders(4).toTypedArray())
 
-        runBlocking {
-            when (val reminders = remindersRepository.getReminders()) {
-                is Result.Success -> assertFalse(reminders.data.isNullOrEmpty())
-                is Result.Error -> fail()
-            }
+        when (val reminders = remindersRepository.getReminders()) {
+            is Result.Success -> assertFalse(reminders.data.isNullOrEmpty())
+            is Result.Error -> fail()
+        }
 
-            remindersRepository.addReminders(*generateRandomReminders(4).toTypedArray())
-            remindersListViewModel.clearReminders()
+        remindersRepository.addReminders(*generateRandomReminders(4).toTypedArray())
+        remindersListViewModel.clearReminders()
 
-            when (val reminders = remindersRepository.getReminders()) {
-                is Result.Success -> assertTrue(reminders.data.isEmpty())
-                is Result.Error -> fail()
-            }
+        when (val reminders = remindersRepository.getReminders()) {
+            is Result.Success -> assertTrue(reminders.data.isEmpty())
+            is Result.Error -> fail()
         }
     }
 }

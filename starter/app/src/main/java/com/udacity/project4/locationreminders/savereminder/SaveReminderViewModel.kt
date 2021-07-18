@@ -14,8 +14,8 @@ import com.google.android.gms.maps.model.PointOfInterest
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseViewModel
 import com.udacity.project4.base.NavigationCommand
-import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
+import com.udacity.project4.locationreminders.data.local.ReminderRepository
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.utils.SingleLiveEvent
 import com.udacity.project4.utils.addSourceThenPost
@@ -24,7 +24,7 @@ import java.util.*
 
 class SaveReminderViewModel(
     app: Application,
-    private val dataSource: ReminderDataSource
+    private val repository: ReminderRepository
 ) : BaseViewModel(app) {
 
     private val TAG = SaveReminderViewModel::class.simpleName
@@ -38,32 +38,29 @@ class SaveReminderViewModel(
     val latitude = MutableLiveData<Double?>()
     val longitude = MutableLiveData<Double?>()
 
-    private val _currentReminderItem = MediatorLiveData<ReminderDataItem>().apply {
-        value = ReminderDataItem()
-    }
+    private var _currentReminderItem = ReminderDataItem()
 
-    val currentReminderItem: LiveData<ReminderDataItem> = _currentReminderItem
-
-    init {
-        addMediatorSources()
-    }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
-    fun getCurrentReminderItem(): ReminderDataItem? = _currentReminderItem.value
+    fun getCurrentReminderItem() = _currentReminderItem.apply {
+        title = this@SaveReminderViewModel.reminderTitle.value
+        description = this@SaveReminderViewModel.reminderDescription.value
+        location = this@SaveReminderViewModel.reminderSelectedLocationStr.value
+        latitude = this@SaveReminderViewModel.latitude.value
+        longitude = this@SaveReminderViewModel.longitude.value
+    }
 
     /**
      * Clear the live data objects to start fresh next time the view model gets called
      */
     fun clearData() {
-        removeMediatorSources()
         reminderTitle.value = null
         reminderDescription.value = null
         reminderSelectedLocationStr.value = null
         selectedPOI.value = null
         latitude.value = null
         longitude.value = null
-        addMediatorSources()
-        _currentReminderItem.value = ReminderDataItem()
+        _currentReminderItem = ReminderDataItem()
     }
 
     fun goBack() {
@@ -71,7 +68,7 @@ class SaveReminderViewModel(
     }
 
     /**
-     * Validate the entered data then saves the reminder data to the DataSource
+     * Validate the entered data then saves the reminder data to the repository
      */
     fun validateAndSaveReminder(
         reminderData: ReminderDataItem = getCurrentReminderItem() ?: ReminderDataItem()
@@ -82,12 +79,12 @@ class SaveReminderViewModel(
     }
 
     /**
-     * Save the reminder to the data source
+     * Save the reminder to the repository
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     suspend fun saveReminder(reminderData: ReminderDataItem) {
         showLoading.value = true
-        dataSource.saveReminder(
+        repository.saveReminder(
             ReminderDTO(
                 title = reminderData.title,
                 description = reminderData.description,
@@ -169,25 +166,5 @@ class SaveReminderViewModel(
     } catch (e: Exception) {
         Log.e(TAG, e.toString())
         null
-    }
-
-    private fun addMediatorSources() {
-        _currentReminderItem.run {
-            addSourceThenPost(reminderTitle) { _currentReminderItem.value?.title = it }
-            addSourceThenPost(reminderDescription) { _currentReminderItem.value?.description = it }
-            addSourceThenPost(reminderSelectedLocationStr) { _currentReminderItem.value?.location = it }
-            addSourceThenPost(latitude) { _currentReminderItem.value?.latitude = it }
-            addSourceThenPost(longitude) { _currentReminderItem.value?.longitude = it }
-        }
-    }
-
-    private fun removeMediatorSources() {
-        _currentReminderItem.run {
-            removeSource(reminderTitle)
-            removeSource(reminderDescription)
-            removeSource(reminderSelectedLocationStr)
-            removeSource(latitude)
-            removeSource(longitude)
-        }
     }
 }

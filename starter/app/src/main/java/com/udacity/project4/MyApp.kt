@@ -2,9 +2,12 @@ package com.udacity.project4
 
 import android.app.Application
 import com.udacity.project4.authentication.AuthenticationViewModel
+import com.udacity.project4.authentication.AuthenticationViewModelImpl
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.local.LocalDB
+import com.udacity.project4.locationreminders.data.local.ReminderRepository
 import com.udacity.project4.locationreminders.data.local.RemindersLocalRepository
+import com.udacity.project4.locationreminders.data.local.source.RemindersLocalDataSource
 import com.udacity.project4.locationreminders.geofence.GeofenceManager
 import com.udacity.project4.locationreminders.geofence.GeofenceManagerImpl
 import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
@@ -24,9 +27,10 @@ class MyApp : Application() {
         val myModule = module {
             //Declare a ViewModel - be later inject into Fragment with dedicated injector using by viewModel()
             //Declare singleton definitions to be later injected using by inject()
-            single { AuthenticationViewModel(get()) }
-            single<ReminderDataSource> { RemindersLocalRepository(get()) }
+            single<AuthenticationViewModel> { AuthenticationViewModelImpl(get()) }
             single { LocalDB.createRemindersDao(this@MyApp) }
+            single<ReminderDataSource> { RemindersLocalDataSource(get()) }
+            single<ReminderRepository> { RemindersLocalRepository(get()) }
             single<GeofenceManager> { GeofenceManagerImpl(get()) }
             single { SaveReminderViewModel(get(), get()) }
             single { RemindersListViewModel(get(), get()) }
