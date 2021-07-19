@@ -17,12 +17,13 @@
         tools:context=".locationreminders.reminderslist.ReminderListFragment">
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/remindersListConstraintLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/colorPrimaryDark">
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/reminderssRecyclerView"
+                android:id="@+id/remindersRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:liveData="@{viewModel.remindersList}"
@@ -70,7 +71,7 @@
                 android:layout_margin="@dimen/margin_normal"
                 android:src="@drawable/ic_add"
                 app:fabSize="normal"
-                app:layout_anchor="@id/reminderssRecyclerView"
+                app:layout_anchor="@id/remindersRecyclerView"
                 app:layout_anchorGravity="bottom|right|end"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"

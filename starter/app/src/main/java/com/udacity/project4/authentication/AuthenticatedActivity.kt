@@ -18,6 +18,7 @@ abstract class AuthenticatedActivity : AppCompatActivity() {
     private val authViewModel: AuthenticationViewModel by viewModel()
 
     open fun onUserAuthenticated() {}
+
     open fun onUserUnauthenticated() {
         launchActivity<LoginActivity>()
     }

@@ -15,27 +15,26 @@
  */
 package com.udacity.project4.util
 
-import android.content.Context
 import android.view.View
-import androidx.annotation.NavigationRes
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.withFragment
-import androidx.navigation.testing.TestNavHostController
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.IdlingResource
-import com.udacity.project4.R
-import java.util.UUID
+import kotlinx.coroutines.delay
+import java.util.*
 
 class DataBindingIdlingResource : IdlingResource {
     // list of registered callbacks
     private val idlingCallbacks = mutableListOf<IdlingResource.ResourceCallback>()
+
     // give it a unique id to workaround an espresso bug where you cannot register/unregister
     // an idling resource w/ the same name.
     private val id = UUID.randomUUID().toString()
+
     // holds whether isIdle is called and the result was false. We track this to avoid calling
     // onTransitionToIdle callbacks if Espresso never thought we were idle in the first place.
     private var wasNotIdle = false
@@ -67,6 +66,14 @@ class DataBindingIdlingResource : IdlingResource {
 
     override fun registerIdleTransitionCallback(callback: IdlingResource.ResourceCallback) {
         idlingCallbacks.add(callback)
+    }
+
+    suspend fun awaitUntilIdle() {
+        // using loop because some times, registerIdleTransitionCallback wasn't called
+        while (true) {
+            if (isIdleNow) return
+            delay(100)
+        }
     }
 
     /**
@@ -107,7 +114,7 @@ fun DataBindingIdlingResource.monitorActivity(
 /**
  * Sets the fragment from a [FragmentScenario] to be used from [DataBindingIdlingResource].
  */
-inline fun <reified F: Fragment> DataBindingIdlingResource.monitorFragment(
+inline fun <reified F : Fragment> DataBindingIdlingResource.monitorFragment(
     fragmentScenario: FragmentScenario<F>
 ) {
     fragmentScenario.withFragment {

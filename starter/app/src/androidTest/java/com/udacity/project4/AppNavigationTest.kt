@@ -1,28 +1,24 @@
 package com.udacity.project4
 
 import android.app.Application
-import android.os.Build
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.testing.TestNavHostController
+import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.intent.Intents
 import androidx.test.espresso.intent.Intents.intended
 import androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent
-import androidx.test.espresso.matcher.ViewMatchers.*
-import androidx.test.ext.junit.rules.ActivityScenarioRule
+import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
-import androidx.test.runner.permission.PermissionRequester
 import com.udacity.project4.authentication.AuthenticationViewModel
 import com.udacity.project4.authentication.AuthenticationViewModel.AuthenticationState.UNAUTHENTICATED
 import com.udacity.project4.authentication.LoginActivity
-import com.udacity.project4.locationreminders.RemindersActivity
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dummy.DummyAuthViewModel
 import com.udacity.project4.locationreminders.data.dummy.DummyAuthenticatedActivity
@@ -35,6 +31,7 @@ import com.udacity.project4.locationreminders.geofence.GeofenceManager
 import com.udacity.project4.locationreminders.geofence.GeofenceManagerImpl
 import com.udacity.project4.locationreminders.reminderslist.ReminderListFragment
 import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
+import com.udacity.project4.locationreminders.savereminder.SaveReminderFragment
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.util.*
 import com.udacity.project4.utils.EspressoIdlingResource
@@ -64,9 +61,6 @@ class AppNavigationTest : AutoCloseKoinTest() {
 
     @get:Rule
     val instantExecutorRule = InstantTaskExecutorRule()
-
-//    @get:Rule
-//    val activityRule = ActivityScenarioRule(RemindersActivity::class.java)
 
     private lateinit var reminderRepository: ReminderRepository
     private lateinit var appContext: Application
@@ -157,7 +151,7 @@ class AppNavigationTest : AutoCloseKoinTest() {
 
     @Test
     fun reminderListFragment_addLocationReminderClick_opensSaveReminderFragment() {
-        getLocationPermissions()
+        putLocationPermissions()
         val fragmentScenario = launchFragmentScenario<ReminderListFragment>(initialState = Lifecycle.State.STARTED)
         dataBindingIdlingResource.monitorFragment(fragmentScenario)
         waitForInSeconds(1)
@@ -174,13 +168,24 @@ class AppNavigationTest : AutoCloseKoinTest() {
         assert(testNavHostController.currentDestination?.id == R.id.saveReminderFragment)
     }
 
-    private fun getLocationPermissions() {
-        PermissionRequester().apply {
-            addPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION)
-            if (BuildConfig.VERSION_CODE >= Build.VERSION_CODES.Q)
-                addPermissions(android.Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-            requestPermissions()
+    @Test
+    fun saveReminderFragment_selectLocationClick_opensSelectLocationFragment() {
+        putLocationPermissions()
+        val fragmentScenario = launchFragmentScenario<SaveReminderFragment>(initialState = Lifecycle.State.STARTED)
+        dataBindingIdlingResource.monitorFragment(fragmentScenario)
+        waitForInSeconds(1)
+        val fragment = dataBindingIdlingResource.fragment
+        testNavHostController.apply {
+            setLifecycleOwner(fragment.requireActivity())
+            setOnBackPressedDispatcher(fragment.requireActivity().onBackPressedDispatcher)
+            setGraph(R.navigation.nav_graph)
+            navigate(R.id.reminderListFragment)
+            navigate(R.id.to_save_reminder)
         }
+        fragment.setNavController(testNavHostController)
+        fragmentScenario.moveToState(Lifecycle.State.RESUMED)
+        onView(withId(R.id.selectLocation)).perform(click())
+        assert(testNavHostController.currentDestination?.id == R.id.selectLocationFragment)
     }
 
 }

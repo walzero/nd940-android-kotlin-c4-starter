@@ -1,26 +1,23 @@
 package com.udacity.project4.util
 
-import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.view.View
-import androidx.annotation.NavigationRes
 import androidx.annotation.StyleRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
-import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.lifecycle.Lifecycle
-import androidx.navigation.NavDirections
 import androidx.navigation.Navigation
 import androidx.navigation.testing.TestNavHostController
 import androidx.test.espresso.UiController
 import androidx.test.espresso.ViewAction
 import androidx.test.espresso.matcher.ViewMatchers
+import androidx.test.runner.permission.PermissionRequester
+import com.udacity.project4.BuildConfig
 import com.udacity.project4.R
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
-import junit.framework.Assert.assertNotNull
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.*
 import kotlinx.coroutines.test.TestCoroutineDispatcher
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.resetMain
@@ -86,11 +83,23 @@ class MainCoroutineRuleAndroidTests(val dispatcher: TestCoroutineDispatcher = Te
 
     override fun finished(description: Description?) {
         super.finished(description)
-        cleanupTestCoroutines()
         Dispatchers.resetMain()
+        cleanupTestCoroutines()
     }
 }
 
 fun Fragment.setNavController(
     navHostController: TestNavHostController
 ) = Navigation.setViewNavController(requireView(), navHostController)
+
+fun putLocationPermissions() {
+    PermissionRequester().apply {
+        addPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION)
+        if (BuildConfig.VERSION_CODE >= Build.VERSION_CODES.Q)
+            addPermissions(android.Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        requestPermissions()
+    }
+}
+
+//fun withIdleScope(block: suspend () -> Unit) =
+//    withContext(Dispatchers.IO) { block()

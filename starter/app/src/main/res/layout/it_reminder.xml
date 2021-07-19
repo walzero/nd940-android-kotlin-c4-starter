@@ -10,53 +10,56 @@
             type="com.udacity.project4.locationreminders.reminderslist.ReminderDataItem" />
     </data>
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/reminderCardView"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/padding_medium"
-        android:fadeVisible="@{true}">
+        android:background="@drawable/list_item_shape"
+        android:padding="@dimen/padding_medium">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="@dimen/padding_medium">
+            android:layout_marginStart="@dimen/padding_small"
+            android:layout_marginEnd="@dimen/padding_small"
+            android:text="@{item.title}"
+            android:textColor="@color/black"
+            android:textSize="@dimen/text_size_normal"
+            app:layout_constraintEnd_toStartOf="@+id/locationTextView"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Title" />
 
-            <TextView
-                android:id="@+id/title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/padding_small"
-                android:layout_marginLeft="@dimen/padding_small"
-                android:text="@{item.title}"
-                android:textColor="@color/black"
-                android:textSize="@dimen/text_size_normal"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:text="Title" />
+        <TextView
+            android:id="@+id/description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/padding_small"
+            android:text="@{item.description}"
+            android:textSize="@dimen/text_size_small"
+            app:layout_constraintEnd_toEndOf="@+id/locationTextView"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="@id/title"
+            app:layout_constraintTop_toBottomOf="@id/title"
+            tools:text="Description" />
 
-            <TextView
-                android:id="@+id/description"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@{item.description}"
-                android:textSize="@dimen/text_size_small"
-                app:layout_constraintStart_toStartOf="@id/title"
-                app:layout_constraintTop_toBottomOf="@id/title"
-                tools:text="Description" />
+        <TextView
+            android:id="@+id/locationTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@{item.location}"
+            android:textColor="@color/colorAccentDark"
+            android:textSize="@dimen/text_size_small"
+            android:textStyle="bold"
+            app:drawableStartCompat="@drawable/ic_baseline_edit_location_18"
+            app:layout_constraintBottom_toBottomOf="@+id/description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/title"
+            tools:text="Location" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="@{item.location}"
-                android:textColor="@color/colorAccent"
-                android:textSize="@dimen/text_size_small"
-                app:layout_constraintBottom_toBottomOf="@+id/description"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/title"
-                tools:text="Location" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </androidx.cardview.widget.CardView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

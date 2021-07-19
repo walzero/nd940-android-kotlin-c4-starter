@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.findNavController
+import com.udacity.project4.BuildConfig
 import com.udacity.project4.R
 import com.udacity.project4.authentication.AuthenticatedActivity
 import com.udacity.project4.databinding.ActivityRemindersBinding
@@ -17,7 +18,7 @@ class RemindersActivity : AuthenticatedActivity() {
     private lateinit var binding: ActivityRemindersBinding
 
     override fun onUserAuthenticated() {
-        if(::binding.isInitialized)
+        if (::binding.isInitialized && !BuildConfig.DEBUG)
             binding.root.showShortSnackbar(getString(R.string.user_authenticated))
     }
 
