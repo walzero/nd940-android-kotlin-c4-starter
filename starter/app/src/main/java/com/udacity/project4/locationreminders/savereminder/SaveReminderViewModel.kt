@@ -71,7 +71,7 @@ class SaveReminderViewModel(
      * Validate the entered data then saves the reminder data to the repository
      */
     fun validateAndSaveReminder(
-        reminderData: ReminderDataItem = getCurrentReminderItem() ?: ReminderDataItem()
+        reminderData: ReminderDataItem = getCurrentReminderItem()
     ) = viewModelScope.launch {
         if (validateEnteredData(reminderData)) {
             saveReminder(reminderData).also { createGeofence.postValue(reminderData) }

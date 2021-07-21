@@ -10,8 +10,7 @@ import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
 import com.udacity.project4.R
@@ -32,7 +31,7 @@ import com.udacity.project4.util.MainCoroutineRuleAndroidTests
 import com.udacity.project4.util.generateRandomReminders
 import com.udacity.project4.util.monitorActivity
 import com.udacity.project4.utils.EspressoIdlingResource
-import junit.framework.Assert.assertEquals
+import org.junit.Assert.assertEquals
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
@@ -94,9 +93,7 @@ class ReminderListFragmentTest : AutoCloseKoinTest() {
             }
         }
         //declare a new koin module
-        startKoin {
-            modules(listOf(myModule))
-        }
+        startKoin { modules(listOf(myModule)) }
 
         reminderDataSource = get()
         //Get our real repository
@@ -164,6 +161,22 @@ class ReminderListFragmentTest : AutoCloseKoinTest() {
                 activityScenario.close()
             }
         }
+    }
+
+    @Test
+    fun reminderListFragment_getRemindersWithError_showsSnackBar() {
+        withAuthenticationGranted()
+        val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
+        dataBindingIdlingResource.monitorActivity(activityScenario)
+        val navController = dataBindingIdlingResource.activity.findNavController(R.id.nav_host_fragment)
+        assertEquals(navController.currentDestination?.id, R.id.reminderListFragment)
+
+        val testErrorMessage = "Simulated Error"
+        remindersListViewModel.showSnackBar.value = testErrorMessage
+        onView(withId(com.google.android.material.R.id.snackbar_text))
+            .check(matches(withText(testErrorMessage)))
+
+        activityScenario.close()
     }
 
     private fun withAuthenticationGranted() {
