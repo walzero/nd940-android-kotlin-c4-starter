@@ -51,8 +51,8 @@ class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
         }
 
     private fun onLocationPermissionsGranted() {
-        if(::binding.isInitialized)
-            binding.map.visibility = View.VISIBLE
+//        if(::binding.isInitialized)
+//            binding.map.visibility = View.VISIBLE
         mapFragment.getMapAsync(this@SelectLocationFragment)
     }
 
@@ -74,7 +74,8 @@ class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
 
     override fun onStart() {
         super.onStart()
-        runWithPermission(::onLocationPermissionsGranted)
+        mapFragment.getMapAsync(this@SelectLocationFragment)
+        runWithForegroundPermission(::onLocationPermissionsGranted)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -114,7 +115,7 @@ class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
 
     @SuppressLint("MissingPermission")
     private fun GoogleMap.initializeCurrentLocation() {
-        if (hasLocationPermissions()) {
+//        if (hasLocationPermissions()) {
             val locationTask = _locationServices.lastLocation
 
             locationTask.addOnCompleteListener { task ->
@@ -128,9 +129,9 @@ class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
                     }
                 }
             }
-        } else {
-            Log.i("DEBUG", "permissions denied")
-        }
+//        } else {
+//            Log.i("DEBUG", "permissions denied")
+//        }
     }
 
     @SuppressLint("MissingPermission")

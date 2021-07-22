@@ -27,8 +27,12 @@ abstract class BaseLocationFragment : BaseFragment() {
 
     private lateinit var permissionDialog: MaterialDialog
 
-    fun runWithPermission(block: () -> Unit = {}) {
+    fun runWithBackgroundPermission(block: () -> Unit = {}) {
         if (hasLocationPermissions()) block() else requestLocationPermissions()
+    }
+
+    fun runWithForegroundPermission(block: () -> Unit = {}) {
+        if (hasLocationPermissions(onlyForeground = true)) block() else requestLocationPermissions()
     }
 
     @TargetApi(30)
@@ -53,10 +57,10 @@ abstract class BaseLocationFragment : BaseFragment() {
         !requireContext().applicationContext.isAllowed(fineLocationPermission) &&
                 !shouldShowRequestPermissionRationale(fineLocationPermission)
 
-    fun hasLocationPermissions(): Boolean {
+    fun hasLocationPermissions(onlyForeground: Boolean = false): Boolean {
         var requiredPermissions = arrayOf(fineLocationPermission)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !onlyForeground)
             requiredPermissions += backgroundPermission
 
         return requireContext().areAllowed(requiredPermissions)
@@ -83,7 +87,7 @@ abstract class BaseLocationFragment : BaseFragment() {
         @StringRes title: Int = R.string.permission_required_title,
         @StringRes message: Int = R.string.permission_required_explanation,
         autoDismiss: Boolean = true,
-        onNegativeAction: () -> Unit = { goBackToLastFragment() },
+        onNegativeAction: () -> Unit = { },
         onPositiveAction: () -> Unit
     ): MaterialDialog = requireActivity().showYesNoDialog(
         title = title,

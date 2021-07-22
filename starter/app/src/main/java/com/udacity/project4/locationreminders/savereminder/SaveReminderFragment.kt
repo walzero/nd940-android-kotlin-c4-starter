@@ -56,7 +56,7 @@ class SaveReminderFragment : BaseLocationFragment() {
     }
 
     private fun onSaveReminder() =
-        runWithPermission {  _viewModel.validateAndSaveReminder() }
+        runWithBackgroundPermission {  _viewModel.validateAndSaveReminder() }
 
     override fun onDestroy() {
         super.onDestroy()
