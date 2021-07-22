@@ -134,7 +134,8 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     @SuppressLint("MissingPermission")
     private fun GoogleMap.enableMyLocation() {
-        if (requireContext().hasForegroundPermissions()) {
+        if (requireContext().hasForegroundPermissions() && !isMyLocationEnabled) {
+            mapFragment.getMapAsync(this@SelectLocationFragment)
             isMyLocationEnabled = true
         }
     }
