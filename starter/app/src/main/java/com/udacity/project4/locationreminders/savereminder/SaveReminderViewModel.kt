@@ -3,8 +3,6 @@ package com.udacity.project4.locationreminders.savereminder
 import android.app.Application
 import android.util.Log
 import androidx.annotation.VisibleForTesting
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.Geofence
@@ -18,7 +16,6 @@ import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.data.local.ReminderRepository
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.utils.SingleLiveEvent
-import com.udacity.project4.utils.addSourceThenPost
 import kotlinx.coroutines.launch
 import java.util.*
 

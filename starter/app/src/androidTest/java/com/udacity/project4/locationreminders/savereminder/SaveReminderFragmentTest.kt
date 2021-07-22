@@ -10,8 +10,7 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withText
+import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
 import com.google.android.gms.maps.model.LatLng
@@ -28,13 +27,9 @@ import com.udacity.project4.locationreminders.data.local.source.RemindersLocalDa
 import com.udacity.project4.locationreminders.geofence.GeofenceManager
 import com.udacity.project4.locationreminders.geofence.GeofenceManagerImpl
 import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
-import com.udacity.project4.util.DataBindingIdlingResource
-import com.udacity.project4.util.MainCoroutineRuleAndroidTests
-import com.udacity.project4.util.monitorActivity
+import com.udacity.project4.util.*
 import com.udacity.project4.utils.EspressoIdlingResource
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.android.awaitFrame
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -204,6 +199,7 @@ class SaveReminderFragmentTest : AutoCloseKoinTest() {
 
     @Test
     fun saveReminderFragment_onSaveReminderWithPOI_savesReminder() {
+        putLocationPermissions()
         withAuthenticationGranted()
         val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
         dataBindingIdlingResource.monitorActivity(activityScenario)
@@ -236,6 +232,7 @@ class SaveReminderFragmentTest : AutoCloseKoinTest() {
 
             saveReminderViewModel.validateAndSaveReminder()
             dataBindingIdlingResource.awaitUntilIdle()
+            onView(withText(R.string.reminder_saved)).inRoot(ToastMatcher()).check(matches(isDisplayed()))
 
             navController.popBackStack(R.id.saveReminderFragment, true)
             assertEquals(navController.currentDestination?.id, R.id.reminderListFragment)
@@ -249,6 +246,7 @@ class SaveReminderFragmentTest : AutoCloseKoinTest() {
 
     @Test
     fun saveReminderFragment_onSaveReminderWithLatLng_savesReminder() {
+        putLocationPermissions()
         withAuthenticationGranted()
         val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
         dataBindingIdlingResource.monitorActivity(activityScenario)

@@ -2,7 +2,9 @@ package com.udacity.project4.util
 
 import android.os.Build
 import android.os.Bundle
+import android.os.IBinder
 import android.view.View
+import android.view.WindowManager
 import androidx.annotation.StyleRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
@@ -10,6 +12,7 @@ import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.Navigation
 import androidx.navigation.testing.TestNavHostController
+import androidx.test.espresso.Root
 import androidx.test.espresso.UiController
 import androidx.test.espresso.ViewAction
 import androidx.test.espresso.matcher.ViewMatchers
@@ -23,6 +26,7 @@ import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.hamcrest.Matcher
+import org.hamcrest.TypeSafeMatcher
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import java.util.*
@@ -98,6 +102,23 @@ fun putLocationPermissions() {
         if (BuildConfig.VERSION_CODE >= Build.VERSION_CODES.Q)
             addPermissions(android.Manifest.permission.ACCESS_BACKGROUND_LOCATION)
         requestPermissions()
+    }
+}
+
+class ToastMatcher : TypeSafeMatcher<Root>() {
+    override fun describeTo(description: org.hamcrest.Description) {
+        description.appendText("is toast")
+    }
+
+    override fun matchesSafely(root: Root): Boolean {
+        val type: Int = root.windowLayoutParams?.get()?.type!!
+        if (type == WindowManager.LayoutParams.TYPE_TOAST) {
+            val decorView = root.decorView
+            val windowToken: IBinder = decorView?.windowToken!!
+            val appToken: IBinder = decorView.applicationWindowToken
+            if (windowToken === appToken) return true
+        }
+        return false
     }
 }
 
