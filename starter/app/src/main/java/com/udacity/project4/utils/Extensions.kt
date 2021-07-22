@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.provider.Settings
 import android.util.Log
 import android.view.Gravity
@@ -14,6 +15,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -166,6 +168,40 @@ fun Context.areAllowed(permissions: Array<String>): Boolean {
 
     return true
 }
+
+fun Context.canRequestBackgroundLocationPermission() =
+    Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+            !applicationContext.isAllowed(backgroundPermission)
+
+fun Fragment.canRequestFineLocationPermission() =
+    !requireContext().applicationContext.isAllowed(fineLocationPermission) &&
+            !shouldShowRequestPermissionRationale(fineLocationPermission)
+
+fun Context.hasForegroundPermissions(): Boolean = areAllowed(arrayOf(fineLocationPermission))
+
+fun Context.hasBackgroundPermissions(): Boolean {
+    var requiredPermissions = arrayOf(fineLocationPermission)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+        requiredPermissions += backgroundPermission
+
+    return areAllowed(requiredPermissions)
+}
+
+fun Activity.showPermissionsRequiredDialog(
+    @StringRes title: Int = R.string.permission_required_title,
+    @StringRes message: Int = R.string.permission_required_explanation,
+    autoDismiss: Boolean = true,
+    onNegativeAction: () -> Unit = { },
+    onPositiveAction: () -> Unit
+): MaterialDialog = showYesNoDialog(
+    title = title,
+    message = message,
+    autoDismiss = autoDismiss,
+    positiveText = R.string.allow,
+    negativeText = R.string.go_back,
+    onNegativeAction = onNegativeAction,
+    onPositiveAction = onPositiveAction
+)
 
 fun <T : Any> MutableLiveData<T>.postSelf() {
     postValue(value)

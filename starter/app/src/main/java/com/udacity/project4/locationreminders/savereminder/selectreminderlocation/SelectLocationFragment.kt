@@ -7,6 +7,7 @@ import android.location.Location
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Lifecycle
 import com.google.android.gms.location.*
@@ -17,7 +18,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.material.snackbar.Snackbar
 import com.udacity.project4.R
-import com.udacity.project4.base.BaseLocationFragment
+import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.*
@@ -25,7 +26,7 @@ import org.koin.android.ext.android.inject
 import java.util.*
 
 
-class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
+class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     //Use Koin to get the view model of the SaveReminder
     override val _viewModel: SaveReminderViewModel by inject()
@@ -35,6 +36,12 @@ class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
     private val mapFragment by lazy {
         childFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
+    }
+
+    //location stuff
+    private val _locationServices by lazy { LocationServices.getFusedLocationProviderClient(requireActivity()) }
+    private val fineLocationRequest = registerForActivityResult(ActivityResultContracts.RequestPermission()) { result ->
+        if (result) map.enableMyLocation()
     }
 
     private lateinit var map: GoogleMap
@@ -50,12 +57,6 @@ class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
             field?.position?.showConfirmationSnackbar()
         }
 
-    private fun onLocationPermissionsGranted() {
-//        if(::binding.isInitialized)
-//            binding.map.visibility = View.VISIBLE
-        mapFragment.getMapAsync(this@SelectLocationFragment)
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -69,13 +70,14 @@ class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
         setDisplayHomeAsUpEnabled(true)
         setTitle(getString(R.string.select_location))
 
+        runWithForegroundPermission()
+
         return binding.root
     }
 
     override fun onStart() {
         super.onStart()
         mapFragment.getMapAsync(this@SelectLocationFragment)
-        runWithForegroundPermission(::onLocationPermissionsGranted)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -115,28 +117,24 @@ class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
 
     @SuppressLint("MissingPermission")
     private fun GoogleMap.initializeCurrentLocation() {
-//        if (hasLocationPermissions()) {
-            val locationTask = _locationServices.lastLocation
+        val locationTask = _locationServices.lastLocation
 
-            locationTask.addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    lastKnownLocation = task.result
-                    lastKnownLocation?.run {
-                        val zoomLevel = 18f
-                        val latLng = LatLng(latitude, longitude)
-                        moveCameraToPosition(latLng, zoomLevel)
-                        addCurrentPositionMarker(latLng)
-                    }
+        locationTask.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                lastKnownLocation = task.result
+                lastKnownLocation?.run {
+                    val zoomLevel = 18f
+                    val latLng = LatLng(latitude, longitude)
+                    moveCameraToPosition(latLng, zoomLevel)
+                    addCurrentPositionMarker(latLng)
                 }
             }
-//        } else {
-//            Log.i("DEBUG", "permissions denied")
-//        }
+        }
     }
 
     @SuppressLint("MissingPermission")
     private fun GoogleMap.enableMyLocation() {
-        if (hasLocationPermissions()) {
+        if (requireContext().hasForegroundPermissions()) {
             isMyLocationEnabled = true
         }
     }
@@ -244,4 +242,10 @@ class SelectLocationFragment : BaseLocationFragment(), OnMapReadyCallback {
 
         return this
     }
+
+    private fun runWithForegroundPermission() {
+        if (canRequestFineLocationPermission()) requestFineLocationPermission()
+    }
+
+    private fun requestFineLocationPermission() = fineLocationRequest.launch(fineLocationPermission)
 }

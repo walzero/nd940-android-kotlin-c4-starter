@@ -5,7 +5,7 @@ import android.view.*
 import androidx.databinding.DataBindingUtil
 import com.udacity.project4.R
 import com.udacity.project4.authentication.AuthenticationViewModel
-import com.udacity.project4.base.BaseLocationFragment
+import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentRemindersBinding
 import com.udacity.project4.locationreminders.geofence.GeofenceManager
@@ -14,7 +14,7 @@ import com.udacity.project4.utils.setTitle
 import com.udacity.project4.utils.setup
 import org.koin.android.ext.android.inject
 
-class ReminderListFragment : BaseLocationFragment() {
+class ReminderListFragment : BaseFragment() {
     //use Koin to retrieve the ViewModel instance
     override val _viewModel: RemindersListViewModel by inject()
     private val authViewModel: AuthenticationViewModel by inject()
