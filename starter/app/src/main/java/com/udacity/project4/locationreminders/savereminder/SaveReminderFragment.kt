@@ -1,5 +1,6 @@
 package com.udacity.project4.locationreminders.savereminder
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -28,20 +29,22 @@ class SaveReminderFragment : BaseFragment() {
 
     //location stuff
     private lateinit var permissionDialog: MaterialDialog
-    private val fineLocationRequest = registerForActivityResult(ActivityResultContracts.RequestPermission()) { result ->
-        if(!result && canRequestFineLocationPermission()) {
-            showPermissionRequiredDialog()
-            return@registerForActivityResult
-        }
-
-        startPermissionsRequestForBackgroundLocation()
-    }
-
-    private val backgroundLocationRequest =
+    private val fineLocationRequest =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { result ->
             when (result) {
                 true -> saveReminderWithBackgroundPermission()
-                else -> startPermissionsRequestForBackgroundLocation()
+                else -> showPermissionRequiredDialog()
+            }
+        }
+
+    //for some reason background permission cant be requested along with fineLocation, so I need to make a separate
+    //call after I get the foreground location for support to newer versions
+    private val backgroundLocationRequest =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { result ->
+            when {
+                result -> saveReminderWithBackgroundPermission()
+                requireActivity().shouldShowBackgroundLocationDialog() ->
+                    showPermissionRequiredDialog()
             }
         }
 
@@ -84,27 +87,36 @@ class SaveReminderFragment : BaseFragment() {
         dismissCurrentDialog()
     }
 
-    private fun saveReminderWithBackgroundPermission() {
-        if (requireContext().hasBackgroundPermissions()) _viewModel.validateAndSaveReminder()
-        else backgroundLocationRequest.launch(backgroundPermission)
-    }
-
-    private fun requestFineLocationPermission() =
-        fineLocationRequest.launch(fineLocationPermission)
-
-    private fun startPermissionsRequestForBackgroundLocation() {
+    private fun saveReminderWithBackgroundPermission() = with(requireActivity()) {
         when {
-            canRequestFineLocationPermission() -> requestFineLocationPermission()
-            else -> showPermissionRequiredDialog()
+            hasBackgroundPermissions() -> _viewModel.validateAndSaveReminder()
+            !hasFineLocationPermission() -> requestFineLocationPermission()
+            shouldShowBackgroundLocationDialog() ->
+                showPermissionRequiredDialog{ requestBackgroundLocationPermission() }
+            else -> requestBackgroundLocationPermission()
         }
     }
 
-    private fun showPermissionRequiredDialog() {
+    private fun requestFineLocationPermission() {
+        fineLocationRequest.launch(fineLocationPermission)
+    }
+
+    private fun requestBackgroundLocationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+            backgroundLocationRequest.launch(backgroundPermission)
+        else
+            fineLocationRequest.launch(fineLocationPermission)
+    }
+
+
+    private fun showPermissionRequiredDialog(
+        onAllowClicked: () -> Unit = { requireActivity().launchPermissionSettingsActivity() }
+    ) {
         permissionDialog = requireActivity().showPermissionsRequiredDialog(
             message = R.string.permission_denied_explanation,
             autoDismiss = false,
         ) {
-            requireActivity().launchPermissionSettingsActivity()
+            onAllowClicked()
             permissionDialog.dismiss()
         }
     }

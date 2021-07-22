@@ -20,6 +20,7 @@ import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.app.ActivityCompat
+import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
@@ -169,13 +170,12 @@ fun Context.areAllowed(permissions: Array<String>): Boolean {
     return true
 }
 
-fun Context.canRequestBackgroundLocationPermission() =
-    Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
-            !applicationContext.isAllowed(backgroundPermission)
+fun Activity.shouldShowBackgroundLocationDialog(): Boolean =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+        shouldShowRequestPermissionRationale(backgroundPermission) else false
 
-fun Fragment.canRequestFineLocationPermission() =
-    !requireContext().applicationContext.isAllowed(fineLocationPermission) &&
-            !shouldShowRequestPermissionRationale(fineLocationPermission)
+fun Fragment.hasFineLocationPermission() =
+    requireContext().applicationContext.isAllowed(fineLocationPermission)
 
 fun Context.hasForegroundPermissions(): Boolean = areAllowed(arrayOf(fineLocationPermission))
 

@@ -245,7 +245,8 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     }
 
     private fun runWithForegroundPermission() {
-        if (canRequestFineLocationPermission()) requestFineLocationPermission()
+        if (!hasFineLocationPermission())
+            requestFineLocationPermission()
     }
 
     private fun requestFineLocationPermission() = fineLocationRequest.launch(fineLocationPermission)
