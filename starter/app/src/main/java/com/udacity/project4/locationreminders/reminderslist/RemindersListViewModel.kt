@@ -43,10 +43,10 @@ class RemindersListViewModel(
                             reminder.id
                         )
                     })
-                    _remindersList.value = dataList
+                    _remindersList.postValue(dataList)
                 }
                 is Result.Error ->
-                    showSnackBar.value = result.message
+                    showSnackBar.postValue(result.message)
             }
 
             //check if no data has to be shown
@@ -58,7 +58,7 @@ class RemindersListViewModel(
      * Inform the user that there's not any data if the remindersList is empty
      */
     private fun invalidateShowNoData() {
-        showNoData.value = remindersList.value == null || remindersList.value!!.isEmpty()
+        showNoData.postValue(remindersList.value.isNullOrEmpty())
     }
 
     fun clearReminders() {
