@@ -1,13 +1,20 @@
 package com.udacity.project4.locationreminders.savereminder
 
+import android.app.Activity
+import android.content.IntentSender
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.databinding.DataBindingUtil
 import com.afollestad.materialdialogs.MaterialDialog
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
@@ -27,6 +34,8 @@ class SaveReminderFragment : BaseFragment() {
 
     private val TAG = SaveReminderFragment::class.simpleName
 
+    private val locationServices by lazy { LocationServices.getSettingsClient(requireContext()) }
+
     //location stuff
     private lateinit var permissionDialog: MaterialDialog
     private val fineLocationRequest =
@@ -45,6 +54,14 @@ class SaveReminderFragment : BaseFragment() {
                 result -> saveReminderWithBackgroundPermission()
                 requireActivity().shouldShowBackgroundLocationDialog() ->
                     showPermissionRequiredDialog()
+            }
+        }
+
+    private val gpsRequest =
+        registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+            when(result.resultCode) {
+                Activity.RESULT_OK -> _viewModel.validateAndSaveReminder()
+                else -> showGPSFailureSnackBar()
             }
         }
 
@@ -89,12 +106,30 @@ class SaveReminderFragment : BaseFragment() {
 
     private fun saveReminderWithBackgroundPermission() = with(requireActivity()) {
         when {
-            hasBackgroundPermissions() -> _viewModel.validateAndSaveReminder()
+            hasBackgroundPermissions() -> runWithGPSEnabled { _viewModel.validateAndSaveReminder() }
             !hasFineLocationPermission() -> requestFineLocationPermission()
             shouldShowBackgroundLocationDialog() ->
-                showPermissionRequiredDialog{ requestBackgroundLocationPermission() }
+                showPermissionRequiredDialog { requestBackgroundLocationPermission() }
             else -> requestBackgroundLocationPermission()
         }
+    }
+
+    private fun runWithGPSEnabled(onGPSEnabled: () -> Unit) {
+        geofenceManager.verifyLocationSettings(
+            locationSettings = locationServices,
+            onSuccessListener = { onGPSEnabled() }
+        ) { exception -> onGPSNotEnabled(exception) }
+    }
+
+    private fun onGPSNotEnabled(exception: Exception) = when (exception) {
+        is ResolvableApiException ->
+            gpsRequest.launch(IntentSenderRequest.Builder(exception.resolution).build())
+
+        else -> showGPSFailureSnackBar()
+    }
+
+    private fun showGPSFailureSnackBar() = with(_viewModel) {
+        showSnackBarInt.postValue(R.string.location_required_error)
     }
 
     private fun requestFineLocationPermission() {

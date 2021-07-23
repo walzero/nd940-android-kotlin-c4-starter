@@ -187,6 +187,22 @@ fun Context.hasBackgroundPermissions(): Boolean {
     return areAllowed(requiredPermissions)
 }
 
+fun Activity.showGPSLocationRequiredDialog(
+    @StringRes title: Int = R.string.location_required_title,
+    @StringRes message: Int = R.string.location_required_error,
+    autoDismiss: Boolean = true,
+    onNegativeAction: () -> Unit = { },
+    onPositiveAction: () -> Unit
+): MaterialDialog = showYesNoDialog(
+    title = title,
+    message = message,
+    autoDismiss = autoDismiss,
+    positiveText = R.string.allow,
+    negativeText = R.string.go_back,
+    onNegativeAction = onNegativeAction,
+    onPositiveAction = onPositiveAction
+)
+
 fun Activity.showPermissionsRequiredDialog(
     @StringRes title: Int = R.string.permission_required_title,
     @StringRes message: Int = R.string.permission_required_explanation,

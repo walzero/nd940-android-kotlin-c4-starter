@@ -21,7 +21,8 @@
     <string name="dropped_pin">Dropped Pin</string>
     <string name="current_location_pin">Current Location Pin</string>
     <string name="poi">poi</string>
-    <string name="location_required_error">Location services must be enabled to use the app</string>
+    <string name="location_required_title">Add location reminder failed</string>
+    <string name="location_required_error">Failed to obtain Gps Location services, please enable location on you phone and try again.</string>
     <string name="permission_required_title">Location permission required</string>
     <string name="permission_denied_title">Location permission denied</string>
     <string name="allow">Allow</string>
